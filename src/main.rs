@@ -28,10 +28,12 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(GamePlugin)
+        
         .add_plugins(VoxelWorldPlugin::default())
+        .add_plugins(GamePlugin)
         .add_systems(Startup, set_window_icon)
         .add_systems(Startup, setup)
+        
         .run();
 }
 
@@ -95,7 +97,7 @@ fn get_voxel_fn() -> Box<dyn FnMut(IVec3) -> WorldVoxel + Send + Sync> {
     })
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands,) {
     commands.insert_resource(VoxelWorldConfiguration {
         // This is the spawn distance (in 32 meter chunks), centered around the camera.
         spawning_distance: 25,
@@ -115,10 +117,13 @@ fn setup(mut commands: Commands) {
             transform: Transform::from_xyz(-200.0, 180.0, -200.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         },
+       
         // This tells bevy_voxel_world tos use this cameras transform to calculate spawning area
         VoxelWorldCamera,
     ));
 
+
+   
     // Sun
     let cascade_shadow_config = CascadeShadowConfigBuilder { ..default() }.build();
     commands.spawn(DirectionalLightBundle {
