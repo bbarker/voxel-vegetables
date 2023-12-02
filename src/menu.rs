@@ -208,17 +208,16 @@ fn click_play_button(
     mut menu_camera_query: Query<&mut Camera, With<MenuCamera>>,
     mut game_camera_query: Query<&mut Camera, (With<VoxelWorldCamera>, Without<MenuCamera>)>,
 ) {
-    // disable menu camera to avoid multiple cameras at once
-    let mut menu_camera = menu_camera_query.single_mut();
-    menu_camera.is_active = false;
-
-    // enable Game Camera
-    let mut game_camera = game_camera_query.single_mut();
-    game_camera.is_active = true;
-
     for (interaction, mut color, button_colors, change_state, open_link) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
+                // disable menu camera to avoid multiple cameras at once
+                let mut menu_camera = menu_camera_query.single_mut();
+                menu_camera.is_active = false;
+
+                // enable Game Camera
+                let mut game_camera = game_camera_query.single_mut();
+                game_camera.is_active = true;
                 if let Some(state) = change_state {
                     next_state.set(state.0.clone());
                 } else if let Some(link) = open_link {
