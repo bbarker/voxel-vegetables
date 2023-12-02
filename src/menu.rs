@@ -37,7 +37,7 @@ impl Default for ButtonColors {
 struct Menu;
 
 fn setup_menu(
-    mut commands: Commands, 
+    mut commands: Commands,
     textures: Res<TextureAssets>,
     mut game_camera_query: Query<&mut Camera, With<VoxelWorldCamera>>,
 ) {
@@ -185,8 +185,6 @@ fn setup_menu(
                     });
                 });
         });
-
-    
 }
 
 #[derive(Component)]
@@ -214,7 +212,7 @@ fn click_play_button(
     let mut menu_camera = menu_camera_query.single_mut();
     menu_camera.is_active = false;
 
-    // enable Game Camera 
+    // enable Game Camera
     let mut game_camera = game_camera_query.single_mut();
     game_camera.is_active = true;
 
