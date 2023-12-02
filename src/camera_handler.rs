@@ -1,4 +1,4 @@
-use bevy::{prelude::*, a11y::accesskit::Action, input::mouse::MouseMotion};
+use bevy::{a11y::accesskit::Action, input::mouse::MouseMotion, prelude::*};
 use bevy_voxel_world::prelude::*;
 
 use crate::GameState;
@@ -19,7 +19,11 @@ fn move_camera(
     mut cam_transform: Query<&mut Transform, With<VoxelWorldCamera>>,
 ) {
     for ev in motion_evr.iter() {
-        cam_transform.single_mut().rotate_y(-(ev.delta.x * time.delta_seconds()));
-        cam_transform.single_mut().rotate_x(-(ev.delta.y * time.delta_seconds()))
+        cam_transform
+            .single_mut()
+            .rotate_y(-(ev.delta.x * time.delta_seconds()));
+        cam_transform
+            .single_mut()
+            .rotate_x(-(ev.delta.y * time.delta_seconds()))
     }
 }

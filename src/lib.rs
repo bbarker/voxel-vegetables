@@ -2,19 +2,19 @@
 
 mod actions;
 mod audio;
+mod camera_handler;
 mod lifecycles;
 mod loading;
 mod menu;
 mod player;
-mod camera_handler;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
+use crate::camera_handler::CameraHandlerPlugin;
 use crate::lifecycles::LifeCyclesPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
-use crate::camera_handler::CameraHandlerPlugin;
 
 use bevy::app::App;
 #[cfg(debug_assertions)]
@@ -45,11 +45,8 @@ impl Plugin for GamePlugin {
             ActionsPlugin,
             InternalAudioPlugin,
             PlayerPlugin,
-<<<<<<< HEAD
             LifeCyclesPlugin,
-=======
             CameraHandlerPlugin,
->>>>>>> 65646b5 (feat: add some really bad camera movement)
         ));
 
         #[cfg(debug_assertions)]
