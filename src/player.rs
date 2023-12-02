@@ -18,14 +18,20 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn spawn_player(mut commands: Commands, textures: Res<TextureAssets>) {
+fn spawn_player(
+    mut commands: Commands, 
+    textures: Res<TextureAssets>, 
+    mut cam_transform: Query<&mut Transform, (With<VoxelWorldCamera>, Without<Player>)>,
+) {
     commands
         .spawn(SpriteBundle {
             texture: textures.bevy.clone(),
-            transform: Transform::from_translation(Vec3::new(0., 0., 1.)),
+            transform: Transform::from_translation(Vec3::new(0., 2., 1.)),
             ..Default::default()
         })
         .insert(Player);
+
+        cam_transform.single_mut().translation = Vec3::new(0., 2., 1.);
 }
 
 fn move_player(
