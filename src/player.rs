@@ -2,6 +2,7 @@ use crate::actions::Actions;
 use crate::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy_voxel_world::prelude::*;
 
 pub struct PlayerPlugin;
 
@@ -31,6 +32,7 @@ fn move_player(
     time: Res<Time>,
     actions: Res<Actions>,
     mut player_query: Query<&mut Transform, With<Player>>,
+    mut cam_transform: Query<&mut Transform, (With<VoxelWorldCamera>, Without<Player>)>,
 ) {
     if actions.player_movement.is_none() {
         return;
@@ -43,5 +45,6 @@ fn move_player(
     );
     for mut player_transform in &mut player_query {
         player_transform.translation += movement;
+        cam_transform.single_mut().translation = player_transform.translation;
     }
 }
