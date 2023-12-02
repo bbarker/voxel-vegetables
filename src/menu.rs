@@ -1,6 +1,7 @@
 use crate::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy_voxel_world::prelude::*;
 
 pub struct MenuPlugin;
 
@@ -20,6 +21,9 @@ struct ButtonColors {
     hovered: Color,
 }
 
+#[derive(Component)]
+struct MenuCamera;
+
 impl Default for ButtonColors {
     fn default() -> Self {
         ButtonColors {
@@ -32,9 +36,17 @@ impl Default for ButtonColors {
 #[derive(Component)]
 struct Menu;
 
-fn setup_menu(mut commands: Commands, textures: Res<TextureAssets>) {
+fn setup_menu(
+    mut commands: Commands,
+    textures: Res<TextureAssets>,
+    mut game_camera_query: Query<&mut Camera, With<VoxelWorldCamera>>,
+) {
+    // disable Game Camera
+    let mut camera = game_camera_query.single_mut();
+    camera.is_active = false;
+
     info!("menu");
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn((Camera2dBundle::default(), MenuCamera));
     commands
         .spawn((
             NodeBundle {
@@ -193,10 +205,19 @@ fn click_play_button(
         ),
         (Changed<Interaction>, With<Button>),
     >,
+    mut menu_camera_query: Query<&mut Camera, With<MenuCamera>>,
+    mut game_camera_query: Query<&mut Camera, (With<VoxelWorldCamera>, Without<MenuCamera>)>,
 ) {
     for (interaction, mut color, button_colors, change_state, open_link) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
+                // disable menu camera to avoid multiple cameras at once
+                let mut menu_camera = menu_camera_query.single_mut();
+                menu_camera.is_active = false;
+
+                // enable Game Camera
+                let mut game_camera = game_camera_query.single_mut();
+                game_camera.is_active = true;
                 if let Some(state) = change_state {
                     next_state.set(state.0.clone());
                 } else if let Some(link) = open_link {
