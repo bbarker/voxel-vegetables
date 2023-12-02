@@ -26,12 +26,13 @@ fn spawn_player(
     commands
         .spawn(SpriteBundle {
             texture: textures.bevy.clone(),
-            transform: Transform::from_translation(Vec3::new(0., 2., 1.)),
+            transform: Transform::from_translation(Vec3::new(0., 200., 1.)),
             ..Default::default()
         })
         .insert(Player);
 
-        cam_transform.single_mut().translation = Vec3::new(0., 2., 1.);
+        cam_transform.single_mut().translation = Vec3::new(0., 200., 1.);
+ 
 }
 
 fn move_player(
@@ -47,7 +48,7 @@ fn move_player(
     let movement = Vec3::new(
         actions.player_movement.unwrap().x * speed * time.delta_seconds(),
         actions.player_movement.unwrap().y * speed * time.delta_seconds(),
-        0.,
+        -(actions.player_movement.unwrap().z * speed * time.delta_seconds()),
     );
     for mut player_transform in &mut player_query {
         player_transform.translation += movement;
