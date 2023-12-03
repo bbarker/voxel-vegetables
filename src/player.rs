@@ -32,7 +32,6 @@ fn spawn_player(
         .insert(Player);
 
         cam_transform.single_mut().translation = Vec3::new(0., 200., 1.);
- 
 }
 
 fn move_player(
