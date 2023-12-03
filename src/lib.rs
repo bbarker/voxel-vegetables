@@ -3,8 +3,11 @@
 mod actions;
 mod audio;
 mod camera_handler;
+<<<<<<< HEAD
 mod camera_handler;
 mod lifecycles;
+=======
+>>>>>>> db0f4c7 (remove println; fmt)
 mod loading;
 mod menu;
 mod player;
@@ -12,8 +15,11 @@ mod player;
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
 use crate::camera_handler::CameraHandlerPlugin;
+<<<<<<< HEAD
 use crate::camera_handler::CameraHandlerPlugin;
 use crate::lifecycles::LifeCyclesPlugin;
+=======
+>>>>>>> db0f4c7 (remove println; fmt)
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
