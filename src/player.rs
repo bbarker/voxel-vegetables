@@ -19,8 +19,8 @@ impl Plugin for PlayerPlugin {
 }
 
 fn spawn_player(
-    mut commands: Commands, 
-    textures: Res<TextureAssets>, 
+    mut commands: Commands,
+    textures: Res<TextureAssets>,
     mut cam_transform: Query<&mut Transform, (With<VoxelWorldCamera>, Without<Player>)>,
 ) {
     commands
@@ -31,7 +31,7 @@ fn spawn_player(
         })
         .insert(Player);
 
-        cam_transform.single_mut().translation = Vec3::new(0., 200., 1.);
+    cam_transform.single_mut().translation = Vec3::new(0., 200., 1.);
 }
 
 fn move_player(

@@ -38,7 +38,5 @@ fn move_camera(
 
         // Update the camera's rotation
         camera_transform.rotation = new_rotation;
-
-        println!("ev: delta.x {}, delta.y {}", ev.delta.x, ev.delta.y);
     })
 }
