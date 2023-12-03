@@ -1,13 +1,11 @@
-use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 
 use crate::actions::game_control::{get_movement, GameControl};
-use crate::player::Player;
 use crate::GameState;
 
 mod game_control;
 
-pub const FOLLOW_EPSILON: f32 = 5.;
+//pub const FOLLOW_EPSILON: f32 = 5.;
 
 pub struct ActionsPlugin;
 
@@ -30,9 +28,9 @@ pub struct Actions {
 pub fn set_movement_actions(
     mut actions: ResMut<Actions>,
     keyboard_input: Res<Input<KeyCode>>,
-    touch_input: Res<Touches>,
-    player: Query<&Transform, With<Player>>,
-    camera: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
+    //touch_input: Res<Touches>,
+    //player: Query<&Transform, With<Player>>,
+    //camera: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
 ) {
     let player_movement = Vec3::new(
         get_movement(GameControl::Right, &keyboard_input)
