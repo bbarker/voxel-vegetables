@@ -3,6 +3,7 @@
 mod actions;
 mod audio;
 mod camera_handler;
+mod camera_handler;
 mod lifecycles;
 mod loading;
 mod menu;
@@ -10,6 +11,7 @@ mod player;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
+use crate::camera_handler::CameraHandlerPlugin;
 use crate::camera_handler::CameraHandlerPlugin;
 use crate::lifecycles::LifeCyclesPlugin;
 use crate::loading::LoadingPlugin;
