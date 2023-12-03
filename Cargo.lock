@@ -587,22 +587,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_game"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_asset_loader",
- "bevy_kira_audio",
- "bevy_voxel_world",
- "embed-resource",
- "image",
- "noise",
- "rand 0.8.5",
- "webbrowser",
- "winit",
-]
-
-[[package]]
 name = "bevy_gilrs"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2403,8 +2387,8 @@ name = "mobile"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy_game",
  "cpal",
+ "speed_farmer",
 ]
 
 [[package]]
@@ -3264,6 +3248,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74212e6bbe9a4352329b2f68ba3130c15a3f26fe88ff22dbdc6cdd58fa85e99c"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "speed_farmer"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_asset_loader",
+ "bevy_kira_audio",
+ "bevy_voxel_world",
+ "embed-resource",
+ "image",
+ "noise",
+ "rand 0.8.5",
+ "webbrowser",
+ "winit",
 ]
 
 [[package]]

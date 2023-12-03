@@ -9,7 +9,7 @@ mod player;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
-use crate::lifecycles::seed_to_germinate_system;
+use crate::lifecycles::LifeCyclesPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
@@ -37,15 +37,14 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<GameState>()
-            .add_plugins((
-                LoadingPlugin,
-                MenuPlugin,
-                ActionsPlugin,
-                InternalAudioPlugin,
-                PlayerPlugin,
-            ))
-            .add_systems(Update, seed_to_germinate_system);
+        app.add_state::<GameState>().add_plugins((
+            LoadingPlugin,
+            MenuPlugin,
+            ActionsPlugin,
+            InternalAudioPlugin,
+            PlayerPlugin,
+            LifeCyclesPlugin,
+        ));
 
         #[cfg(debug_assertions)]
         {
