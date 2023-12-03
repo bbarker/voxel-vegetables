@@ -41,7 +41,13 @@ fn set_window_icon(
     primary_window: Query<Entity, With<PrimaryWindow>>,
 ) {
     let primary_entity = primary_window.single();
-    let primary = windows.get_window(primary_entity).unwrap();
+    let primary = match windows.get_window(primary_entity) {
+        Some(window) => window,
+        None => {
+            warn!("No primary window found");
+            return;
+        }
+    };
     let icon_buf = Cursor::new(include_bytes!(
         "../build/macos/AppIcon.iconset/icon_256x256.png"
     ));
