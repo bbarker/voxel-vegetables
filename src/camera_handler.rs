@@ -1,4 +1,4 @@
-use bevy::{input::mouse::MouseMotion, prelude::*};
+use bevy::{input::mouse::MouseMotion, prelude::*, window::CursorGrabMode};
 use bevy_voxel_world::prelude::*;
 
 use crate::GameState;
@@ -9,7 +9,10 @@ pub struct CameraHandlerPlugin;
 /// Camera logic is only active during the State `GameState::Playing`
 impl Plugin for CameraHandlerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, move_camera.run_if(in_state(GameState::Playing)));
+        app.add_systems(Update, (
+            move_camera.run_if(in_state(GameState::Playing)), 
+            setup_mouse.run_if(in_state(GameState::Playing))
+        ));
     }
 }
 
@@ -39,4 +42,13 @@ fn move_camera(
         // Update the camera's rotation
         camera_transform.rotation = new_rotation;
     })
+}
+
+fn setup_mouse(
+    mut windows: Query<&mut Window>,
+){
+    let mut window = windows.single_mut();
+
+    window.cursor.visible = false;
+    window.cursor.grab_mode = CursorGrabMode::Locked;
 }
