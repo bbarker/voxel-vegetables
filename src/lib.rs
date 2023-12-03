@@ -2,12 +2,14 @@
 
 mod actions;
 mod audio;
+mod lifecycles;
 mod loading;
 mod menu;
 mod player;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
+use crate::lifecycles::LifeCyclesPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
@@ -41,6 +43,7 @@ impl Plugin for GamePlugin {
             ActionsPlugin,
             InternalAudioPlugin,
             PlayerPlugin,
+            LifeCyclesPlugin,
         ));
 
         #[cfg(debug_assertions)]

@@ -5,9 +5,9 @@ use bevy::window::PrimaryWindow;
 use bevy::winit::WinitWindows;
 use bevy::DefaultPlugins;
 use bevy::{pbr::CascadeShadowConfigBuilder, prelude::*, utils::HashMap};
-use bevy_game::GamePlugin; // ToDo: Replace bevy_game with your new crate name.
 use bevy_voxel_world::prelude::*;
 use noise::{HybridMulti, NoiseFn, Perlin};
+use speed_farmer::GamePlugin; // ToDo: Replace bevy_game with your new crate name.
 use std::io::Cursor;
 use winit::window::Icon;
 
