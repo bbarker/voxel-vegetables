@@ -1,9 +1,10 @@
 use bevy::prelude::*;
+use std::collections::HashSet;
 
-#[derive(Clone, Debug, Component, Deref)]
+#[derive(Eq, PartialEq, Clone, Debug, Component, Deref)]
 pub struct Water(u32); // Representing quantity of water currently accessible
 
-#[derive(Clone, Debug, Component, Deref)]
+#[derive(Eq, PartialEq, Clone, Debug, Component, Deref)]
 pub struct Soil(u32); // Representing quantity of soil currently accessible
 
 /// Used twice: for initial germination, and to go from germination to growing
@@ -13,11 +14,10 @@ pub struct GerminationTimer(f32); // Timer to track time for germination
 pub struct GerminationNeeds {
     water: Water,
     soil: Soil,
-    time: f32, // may want to change this
 }
 
 /// Unlike GerminationNeeds, GrowingNeeds are cumulative
-#[derive(Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct GrowingNeeds {
     water: Water,
     soil: Soil,
@@ -25,7 +25,7 @@ pub struct GrowingNeeds {
     time: f32,  // may want to change this
 }
 
-#[derive(Clone, Debug, Component)]
+#[derive(Eq, PartialEq, Hash, Clone, Debug, Component)]
 pub enum Species {
     Apple,
     Wheat,
@@ -37,12 +37,10 @@ impl Species {
             Species::Apple => GerminationNeeds {
                 water: Water(1),
                 soil: Soil(1),
-                time: 1.0,
             },
             Species::Wheat => GerminationNeeds {
                 water: Water(1),
                 soil: Soil(1),
-                time: 1.0,
             },
         }
     }
@@ -63,27 +61,24 @@ impl Species {
             },
         }
     }
+
+    pub fn wild_organisms_per_chunk(&self) -> u16 {
+        match self {
+            Species::Apple => 1,
+            Species::Wheat => 10,
+        }
+    }
 }
 
-#[derive(Clone, Debug, Component)]
-pub struct Seed {}
-
-#[derive(Clone, Debug, Component)]
-pub struct Germinated {/* Data for germinated stage */}
-
-#[derive(Clone, Debug, Component)]
-pub struct Growing {
-    needs: GrowingNeeds,
+#[derive(PartialEq, Clone, Debug, Component)]
+pub enum LifePhase {
+    Seed,
+    Germinated,
+    Growing { needs: GrowingNeeds },
+    Mature,
+    // Pollinated,
+    // Fruiting,
 }
-
-#[derive(Clone, Debug, Component)]
-pub struct Mature {/* Mature-specific data */}
-
-#[derive(Clone, Debug, Component)]
-pub struct Pollinated {/* Data for pollinated stage */}
-
-#[derive(Clone, Debug, Component)]
-pub struct Fruiting {/* Data for fruiting stage */}
 
 pub fn seed_to_germinate_system(
     time: Res<Time>,
@@ -91,26 +86,28 @@ pub fn seed_to_germinate_system(
     mut query: Query<(
         Entity,
         &Species,
-        &Seed,
+        &LifePhase,
         &mut GerminationTimer,
         &Water,
         &Soil,
     )>,
 ) {
-    query.for_each_mut(|(entity, species, mut seed, mut timer, water, soil)| {
-        let needs = species.germination_needs();
+    query.for_each_mut(|(entity, species, life_phase, mut timer, water, soil)| {
+        if *life_phase == LifePhase::Seed {
+            let needs = species.germination_needs();
 
-        timer.0 -= time.delta_seconds();
+            timer.0 -= time.delta_seconds();
 
-        if timer.0 <= 0.0 && water.0 >= needs.water.0 && soil.0 >= needs.soil.0 {
-            // If conditions are met, transition from Seed to Germinated
-            commands
-                .entity(entity)
-                .remove::<Seed>()
-                .remove::<GerminationTimer>()
-                // We just add a time delay to go from Germinated to Growing
-                .insert(GerminationTimer(0.0))
-                .insert(Germinated {/* ... */});
+            if timer.0 <= 0.0 && water.0 >= needs.water.0 && soil.0 >= needs.soil.0 {
+                // If conditions are met, transition from Seed to Germinated
+                commands
+                    .entity(entity)
+                    .remove::<LifePhase>()
+                    .remove::<GerminationTimer>()
+                    // We just add a time delay to go from Germinated to Growing
+                    .insert(GerminationTimer(0.0))
+                    .insert(LifePhase::Germinated {/* ... */});
+            }
         }
     })
 }
@@ -119,22 +116,17 @@ pub fn seed_to_germinate_system(
 pub fn germinated_to_growing_system(
     time: Res<Time>,
     mut commands: Commands,
-    mut query: Query<(
-        Entity,
-        &Species,
-        &Germinated,
-        &mut GerminationTimer,
-        &Water,
-        &Soil,
-    )>,
+    mut query: Query<(Entity, &Species, &LifePhase, &mut GerminationTimer)>,
 ) {
-    query.for_each_mut(|(entity, species, mut seed, mut timer, water, soil)| {
-        timer.0 -= time.delta_seconds();
+    query.for_each_mut(|(entity, species, life_phase, mut timer)| {
+        if *life_phase == LifePhase::Germinated {
+            timer.0 -= time.delta_seconds();
 
-        if timer.0 <= 0.0 {
-            commands.entity(entity).insert(Growing {
-                needs: species.growing_needs(),
-            });
+            if timer.0 <= 0.0 {
+                commands.entity(entity).insert(LifePhase::Growing {
+                    needs: species.growing_needs(),
+                });
+            }
         }
     })
 }
@@ -142,31 +134,55 @@ pub fn germinated_to_growing_system(
 pub fn growing_to_mature_system(
     time: Res<Time>,
     mut commands: Commands,
-    mut query: Query<(Entity, &Species, &mut Growing, &Water, &Soil)>,
+    mut query: Query<(Entity, &mut LifePhase, &Water, &Soil)>,
 ) {
     let light = 1.0; // TODO: adjust based on weather
-    query.for_each_mut(|(entity, species, mut growing, water, soil)| {
-        // Check there are some non-zero conditions for growth
-        if growing.needs.time <= 0.0
-            && growing.needs.light <= 0.0
-            && *growing.needs.water == 0
-            && *growing.needs.soil == 0
-        {
-            commands
-                .entity(entity)
-                .remove::<Growing>()
-                .insert(Mature {/* ... */});
-        } else if water.0 > 0 && soil.0 > 0 && light > 0.01 {
-            // Get rate-limiting resource value
-            // (for now we assume 1:1 usage between each)
-            let growth_value = f32::min(f32::min(water.0 as f32, soil.0 as f32), light);
-            growing.needs.time -= time.delta_seconds();
-            growing.needs.water = Water(growing.needs.water.saturating_sub(growth_value as u32));
-            growing.needs.soil = Soil(growing.needs.soil.saturating_sub(growth_value as u32));
-        } else {
-            // TODO: maybe add some health logic later where entities could lose health
-            // if resources are not enough to maintain life
+    query.for_each_mut(|(entity, mut life_phase, water, soil)| {
+        if let LifePhase::Growing { mut needs } = life_phase.clone() {
+            // Check there are some non-zero conditions for growth
+            if needs.time <= 0.0 && needs.light <= 0.0 && *needs.water == 0 && *needs.soil == 0 {
+                commands
+                    .entity(entity)
+                    .remove::<LifePhase>()
+                    .insert(LifePhase::Mature);
+            } else if water.0 > 0 && soil.0 > 0 && light > 0.01 {
+                // Get rate-limiting resource value
+                // (for now we assume 1:1 usage between each)
+                let growth_value = f32::min(f32::min(water.0 as f32, soil.0 as f32), light);
+                needs.time -= time.delta_seconds();
+                needs.water = Water(needs.water.saturating_sub(growth_value as u32));
+                needs.soil = Soil(needs.soil.saturating_sub(growth_value as u32));
+                *life_phase = LifePhase::Growing { needs };
+            } else {
+                // TODO: maybe add some health logic later where entities could lose health
+                //     : if resources are not enough to maintain life
+            }
         }
+    })
+}
+
+// TODO: needs to actually relate to chunks and blocks
+pub fn spawn_life_in_chunk(
+    commands: &mut Commands,
+    species: Species,
+    phase: LifePhase,
+    count: u16,
+) {
+    (1..=count).for_each(|_| {
+        commands.spawn((species.clone(), phase.clone()));
+    })
+}
+
+// TODO: needs to actually relate to chunks and blocks
+fn init_life(mut commands: Commands) {
+    let init_species: HashSet<Species> = vec![Species::Apple, Species::Wheat].into_iter().collect();
+    init_species.into_iter().for_each(|species| {
+        spawn_life_in_chunk(
+            &mut commands,
+            Species::Apple,
+            LifePhase::Seed,
+            species.wild_organisms_per_chunk(),
+        )
     })
 }
 
@@ -176,6 +192,7 @@ impl Plugin for LifeCyclesPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, seed_to_germinate_system)
             .add_systems(Update, germinated_to_growing_system)
-            .add_systems(Update, growing_to_mature_system);
+            .add_systems(Update, growing_to_mature_system)
+            .add_systems(Startup, init_life);
     }
 }
