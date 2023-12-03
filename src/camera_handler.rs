@@ -1,4 +1,4 @@
-use bevy::{a11y::accesskit::Action, input::mouse::MouseMotion, prelude::*};
+use bevy::{input::mouse::MouseMotion, prelude::*};
 use bevy_voxel_world::prelude::*;
 
 use crate::GameState;
@@ -18,12 +18,27 @@ fn move_camera(
     time: Res<Time>,
     mut cam_transform: Query<&mut Transform, With<VoxelWorldCamera>>,
 ) {
-    for ev in motion_evr.iter() {
-        cam_transform
-            .single_mut()
-            .rotate_y(-(ev.delta.x * time.delta_seconds()));
-        cam_transform
-            .single_mut()
-            .rotate_x(-(ev.delta.y * time.delta_seconds()))
-    }
+    motion_evr.read().for_each(|ev| {
+        let rotation_speed = 0.1; // Adjust this value as needed
+
+        // Calculate the new rotation based on mouse input
+        let delta_x = -(ev.delta.x * time.delta_seconds() * rotation_speed);
+        let delta_y = -(ev.delta.y * time.delta_seconds() * rotation_speed);
+
+        // Get the current rotation of the camera
+        let mut camera_transform = cam_transform.single_mut();
+        let current_rotation = camera_transform.rotation;
+
+        // Create new rotations for x and y axes
+        let rotation_x = Quat::from_rotation_x(delta_y);
+        let rotation_y = Quat::from_rotation_y(delta_x);
+
+        // Combine the new rotations with the current rotation
+        let new_rotation = current_rotation * rotation_x * rotation_y;
+
+        // Update the camera's rotation
+        camera_transform.rotation = new_rotation;
+
+        println!("ev: delta.x {}, delta.y {}", ev.delta.x, ev.delta.y);
+    })
 }
