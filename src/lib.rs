@@ -5,6 +5,7 @@ mod audio;
 mod camera_handler;
 mod lifecycles;
 mod loading;
+mod map_setup;
 mod menu;
 mod player;
 
@@ -13,6 +14,7 @@ use crate::audio::InternalAudioPlugin;
 use crate::camera_handler::CameraHandlerPlugin;
 use crate::lifecycles::LifeCyclesPlugin;
 use crate::loading::LoadingPlugin;
+use crate::map_setup::map_setup;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
 
@@ -51,7 +53,8 @@ impl Plugin for GamePlugin {
 
         #[cfg(debug_assertions)]
         {
-            app.add_plugins((FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin::default()));
+            app.add_plugins((FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin::default()))
+                .add_systems(Startup, map_setup);
         }
     }
 }
