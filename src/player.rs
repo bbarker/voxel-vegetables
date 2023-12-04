@@ -1,5 +1,7 @@
 use crate::actions::Actions;
+use crate::core_components::*;
 use crate::loading::TextureAssets;
+use crate::voxel_painting::ray_cast_to_voxel;
 use crate::GameState;
 use bevy::prelude::*;
 use bevy_voxel_world::prelude::*;
@@ -14,7 +16,8 @@ pub struct Player;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::Playing), spawn_player)
-            .add_systems(Update, move_player.run_if(in_state(GameState::Playing)));
+            .add_systems(Update, move_player.run_if(in_state(GameState::Playing)))
+            .add_systems(Update, player_click.run_if(in_state(GameState::Playing)));
     }
 }
 
@@ -54,9 +57,39 @@ fn move_player(
         } else {
             Vec3::ZERO
         };
-        for mut player_transform in &mut player_query {
+        player_query.for_each_mut(|mut player_transform| {
             player_transform.translation += movement;
             cam_query.single_mut().translation += movement;
-        }
+        })
+    }
+}
+
+fn player_click(
+    mut commands: Commands,
+    voxel_world: VoxelWorld,
+    actions: Res<Actions>,
+    player_query: Query<(Entity, &Transform), With<Player>>,
+    cam_query: Query<&Transform, (With<VoxelWorldCamera>, Without<Player>)>,
+) {
+    if actions.left_click_crosshair {
+        let cam_transform = cam_query.single();
+        let click_direction = cam_transform.forward().normalize_or_zero();
+        player_query.for_each(|(player_entity, player_transform)| {
+            if let Some((voxel_pos, _voxel)) =
+                ray_cast_to_voxel(&voxel_world, player_transform.translation, click_direction)
+            {
+                let _managed_id = commands.spawn((
+                    HasPosition { pos: voxel_pos },
+                    PlayerWantsToPaintVoxel {
+                        player: player_entity,
+                        pos: voxel_pos,
+                        paint_as: PaintableResources::SeedCrop(Species::Wheat),
+                    },
+                ));
+                info!("player clicked voxel at {}", voxel_pos);
+            } else {
+                info!("no voxel found in direction {}", click_direction)
+            }
+        })
     }
 }

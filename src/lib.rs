@@ -3,6 +3,7 @@
 mod actions;
 mod audio;
 mod camera_handler;
+mod core_components;
 mod lifecycles;
 mod loading;
 mod map_setup;

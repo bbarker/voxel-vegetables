@@ -15,7 +15,7 @@ impl Plugin for ActionsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Actions>().add_systems(
             Update,
-            set_movement_actions.run_if(in_state(GameState::Playing)),
+            set_playing_actions.run_if(in_state(GameState::Playing)),
         );
     }
 }
@@ -23,22 +23,24 @@ impl Plugin for ActionsPlugin {
 #[derive(Default, Resource)]
 pub struct Actions {
     pub player_movement: Option<Vec3>,
+    pub left_click_crosshair: bool,
 }
 
-pub fn set_movement_actions(
+pub fn set_playing_actions(
     mut actions: ResMut<Actions>,
     keyboard_input: Res<Input<KeyCode>>,
+    mouse_input: Res<Input<MouseButton>>,
     //touch_input: Res<Touches>,
     //player: Query<&Transform, With<Player>>,
     //camera: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
 ) {
     let player_movement = Vec3::new(
-        get_movement(GameControl::Right, &keyboard_input)
-            - get_movement(GameControl::Left, &keyboard_input),
-        get_movement(GameControl::Space, &keyboard_input)
-            - get_movement(GameControl::C, &keyboard_input),
-        get_movement(GameControl::Up, &keyboard_input)
-            - get_movement(GameControl::Down, &keyboard_input),
+        get_movement(GameControl::Right, &keyboard_input, &mouse_input)
+            - get_movement(GameControl::Left, &keyboard_input, &mouse_input),
+        get_movement(GameControl::Space, &keyboard_input, &mouse_input)
+            - get_movement(GameControl::C, &keyboard_input, &mouse_input),
+        get_movement(GameControl::Up, &keyboard_input, &mouse_input)
+            - get_movement(GameControl::Down, &keyboard_input, &mouse_input),
     );
 
     /*if let Some(touch_position) = touch_input.first_pressed_position() {
@@ -57,4 +59,6 @@ pub fn set_movement_actions(
     } else {
         actions.player_movement = None;
     }
+
+    actions.left_click_crosshair = GameControl::ClickTarget.pressed(&keyboard_input, &mouse_input);
 }
