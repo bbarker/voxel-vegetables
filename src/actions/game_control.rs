@@ -5,6 +5,8 @@ pub enum GameControl {
     Down,
     Left,
     Right,
+    Space,
+    C,
 }
 
 impl GameControl {
@@ -22,6 +24,8 @@ impl GameControl {
             GameControl::Right => {
                 keyboard_input.pressed(KeyCode::D) || keyboard_input.pressed(KeyCode::Right)
             }
+            GameControl::Space => keyboard_input.pressed(KeyCode::Space),
+            GameControl::C => keyboard_input.pressed(KeyCode::C),
         }
     }
 }
