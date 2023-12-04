@@ -1,7 +1,7 @@
 use bevy::{input::mouse::MouseMotion, prelude::*, window::CursorGrabMode};
 use bevy_voxel_world::prelude::*;
 
-use crate::{GameState, loading::TextureAssets};
+use crate::{loading::TextureAssets, GameState};
 
 pub struct CameraHandlerPlugin;
 
@@ -10,7 +10,7 @@ pub struct CameraHandlerPlugin;
 impl Plugin for CameraHandlerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::Playing), setup_mouse)
-        .add_systems(Update, move_camera.run_if(in_state(GameState::Playing)));
+            .add_systems(Update, move_camera.run_if(in_state(GameState::Playing)));
     }
 }
 
@@ -46,7 +46,7 @@ fn setup_mouse(
     mut windows: Query<&mut Window>,
     mut commands: Commands,
     textures: Res<TextureAssets>,
-){
+) {
     let mut window = windows.single_mut();
 
     window.cursor.visible = false;
