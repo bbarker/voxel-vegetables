@@ -88,9 +88,9 @@ fn player_click(
                         paint_as: PaintableResources::SeedCrop(Species::Wheat),
                     },
                 ));
-                info!("player clicked voxel at {}", voxel_pos);
+                debug!("player painted voxel at {}", voxel_pos);
             } else {
-                info!("no voxel found in direction {}", click_direction)
+                debug!("nothing to paint in direction {}", click_direction)
             }
         })
     }

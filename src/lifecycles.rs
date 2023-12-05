@@ -1,4 +1,5 @@
 use crate::core_components::*;
+use crate::GameState;
 use bevy::prelude::*;
 use std::collections::HashSet;
 
@@ -112,10 +113,19 @@ pub struct LifeCyclesPlugin;
 
 impl Plugin for LifeCyclesPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, seed_to_germinate_system)
-            .add_systems(Update, germinated_to_growing_system)
-            .add_systems(Update, growing_to_mature_system)
-            .add_systems(Startup, init_life);
+        app.add_systems(
+            Update,
+            seed_to_germinate_system.run_if(in_state(GameState::Playing)),
+        )
+        .add_systems(
+            Update,
+            germinated_to_growing_system.run_if(in_state(GameState::Playing)),
+        )
+        .add_systems(
+            Update,
+            growing_to_mature_system.run_if(in_state(GameState::Playing)),
+        )
+        .add_systems(Startup, init_life);
     }
 }
 
