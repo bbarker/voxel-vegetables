@@ -18,58 +18,55 @@ fn render_ui(
     mut commands: Commands,
     textures: Res<TextureAssets>,
     windows: Query<&Window>,
-    entitys: Query<Entity>
 ) {
     let window: &Window = windows.single();
-    let mut world = World::default();
+    let world = World::default();
 
-    entitys.for_each(|entity| {
-        // render the score, resources and the entities
-        commands
-            .spawn((
-                NodeBundle {
-                    style: Style {
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(100.0),
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Start,
-                        justify_content: JustifyContent::Start,
-                        ..default()
-                    },
+    // render the score, resources and the entities
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Start,
+                    justify_content: JustifyContent::Start,
                     ..default()
                 },
-            ))
-            .with_children(|children| {
-                children
-                    .spawn(TextBundle::from_section(
-                        "Score: 100",
-                        TextStyle {
-                            font_size: 40.0,
-                            color: Color::rgb(0.9, 0.9, 0.9),
-                            ..default()
-                        },
-                    ));
-                children
-                    .spawn(TextBundle::from_section(
-                        "Resources: 100",
-                        TextStyle {
-                            font_size: 20.0,
-                            color: Color::rgb(0.9, 0.9, 0.9),
-                            ..default()
-                        },
-                    ));
-                children
-                    .spawn(TextBundle::from_section(
-                        ["Entities: ".to_string(), world.entities().len().to_string()].join(" "),
-                        TextStyle {
-                            font_size: 20.0,
-                            color: Color::rgb(0.9, 0.9, 0.9),
-                            ..default()
-                        },
-                    ));
-        });
+                ..default()
+            },
+        ))
+        .with_children(|children| {
+            children
+                .spawn(TextBundle::from_section(
+                    "Score: 100",
+                    TextStyle {
+                        font_size: 40.0,
+                        color: Color::rgb(0.9, 0.9, 0.9),
+                        ..default()
+                    },
+                ));
+            children
+                .spawn(TextBundle::from_section(
+                    "Resources: 100",
+                    TextStyle {
+                        font_size: 20.0,
+                        color: Color::rgb(0.9, 0.9, 0.9),
+                        ..default()
+                    },
+                ));
+            children
+                .spawn(TextBundle::from_section(
+                    ["Entities: ".to_string(), world.entities().len().to_string()].join(" "),
+                    TextStyle {
+                        font_size: 20.0,
+                        color: Color::rgb(0.9, 0.9, 0.9),
+                        ..default()
+                    },
+            ));
     });
-
+    
     // draw a crosshair onto the screen
     commands.spawn(ImageBundle {
         image: textures.crosshair.clone().into(),
@@ -81,5 +78,4 @@ fn render_ui(
         ..default()
     });
 
-    
 }
