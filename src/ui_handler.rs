@@ -1,3 +1,5 @@
+use std::fmt::Alignment;
+
 use bevy::prelude::*;
 
 use crate::{loading::TextureAssets, GameState};
@@ -16,8 +18,10 @@ fn render_ui(
     mut commands: Commands,
     textures: Res<TextureAssets>,
     windows: Query<&Window>,
-){
+) {
     let window: &Window = windows.single();
+    
+    // draw a crosshair onto the screen
     commands.spawn(ImageBundle {
         image: textures.crosshair.clone().into(),
         style: Style {
@@ -27,4 +31,49 @@ fn render_ui(
         },
         ..default()
     });
+
+    // render the score, resources and the entities
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Start,
+                    justify_content: JustifyContent::Start,
+                    ..default()
+                },
+                ..default()
+            },
+        ))
+        .with_children(|children| {
+            children
+                .spawn(TextBundle::from_section(
+                    "Score: 100",
+                    TextStyle {
+                        font_size: 40.0,
+                        color: Color::rgb(0.9, 0.9, 0.9),
+                        ..default()
+                    },
+                ));
+            children
+                .spawn(TextBundle::from_section(
+                    "Resources: 100",
+                    TextStyle {
+                        font_size: 20.0,
+                        color: Color::rgb(0.9, 0.9, 0.9),
+                        ..default()
+                    },
+                ));
+            children
+                .spawn(TextBundle::from_section(
+                    "Entities: 100",
+                    TextStyle {
+                        font_size: 20.0,
+                        color: Color::rgb(0.9, 0.9, 0.9),
+                        ..default()
+                    },
+                ));
+        });
 }
