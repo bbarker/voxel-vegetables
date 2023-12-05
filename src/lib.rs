@@ -11,6 +11,7 @@ mod menu;
 mod player;
 mod spawner;
 mod voxel_painting;
+mod ui_handler;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
@@ -20,6 +21,7 @@ use crate::loading::LoadingPlugin;
 use crate::map_setup::map_setup;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
+use crate::ui_handler::UiHandlerPlugin;
 
 use bevy::app::App;
 #[cfg(debug_assertions)]
@@ -52,6 +54,7 @@ impl Plugin for GamePlugin {
             PlayerPlugin,
             LifeCyclesPlugin,
             CameraHandlerPlugin,
+            UiHandlerPlugin,
         ));
 
         #[cfg(debug_assertions)]

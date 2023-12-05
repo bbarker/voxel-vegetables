@@ -1,7 +1,7 @@
 use bevy::{input::mouse::MouseMotion, prelude::*, window::CursorGrabMode};
 use bevy_voxel_world::prelude::*;
 
-use crate::{loading::TextureAssets, GameState};
+use crate::GameState;
 
 pub struct CameraHandlerPlugin;
 
@@ -43,22 +43,10 @@ fn move_camera(
 }
 
 fn setup_mouse(
-    mut windows: Query<&mut Window>,
-    mut commands: Commands,
-    textures: Res<TextureAssets>,
+    mut windows: Query<&mut Window>
 ) {
     let mut window = windows.single_mut();
 
     window.cursor.visible = false;
     window.cursor.grab_mode = CursorGrabMode::Locked;
-
-    commands.spawn(ImageBundle {
-        image: textures.crosshair.clone().into(),
-        style: Style {
-            align_self: AlignSelf::Center,
-            left: Val::Percent(50.),
-            ..default()
-        },
-        ..default()
-    });
 }
