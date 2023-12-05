@@ -1,7 +1,7 @@
 use crate::actions::Actions;
 use crate::core_components::*;
 use crate::loading::TextureAssets;
-use crate::voxel_painting::ray_cast_to_voxel;
+use crate::voxel_painting::paint_on_voxel;
 use crate::GameState;
 use bevy::prelude::*;
 use bevy_voxel_world::prelude::*;
@@ -66,7 +66,7 @@ fn move_player(
 
 fn player_click(
     mut commands: Commands,
-    voxel_world: VoxelWorld,
+    mut voxel_world: VoxelWorld,
     actions: Res<Actions>,
     player_query: Query<(Entity, &Transform), With<Player>>,
     cam_query: Query<&Transform, (With<VoxelWorldCamera>, Without<Player>)>,
@@ -75,9 +75,11 @@ fn player_click(
         let cam_transform = cam_query.single();
         let click_direction = cam_transform.forward().normalize_or_zero();
         player_query.for_each(|(player_entity, player_transform)| {
-            if let Some((voxel_pos, _voxel)) =
-                ray_cast_to_voxel(&voxel_world, player_transform.translation, click_direction)
-            {
+            if let Some(voxel_pos) = paint_on_voxel(
+                &mut voxel_world,
+                player_transform.translation,
+                click_direction,
+            ) {
                 let _managed_id = commands.spawn((
                     HasPosition { pos: voxel_pos },
                     PlayerWantsToPaintVoxel {

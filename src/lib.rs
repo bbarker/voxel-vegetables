@@ -9,6 +9,7 @@ mod loading;
 mod map_setup;
 mod menu;
 mod player;
+mod spawner;
 mod voxel_painting;
 
 use crate::actions::ActionsPlugin;

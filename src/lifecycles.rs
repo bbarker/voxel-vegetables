@@ -118,3 +118,33 @@ impl Plugin for LifeCyclesPlugin {
             .add_systems(Startup, init_life);
     }
 }
+
+/*
+// TODO: get random voxels in each chunk
+
+use bevy::math::UVec3;
+use rand::Rng;
+use std::collections::HashSet;
+use std::iter;
+
+fn get_random_voxels(chunk: &Chunk, num_voxels: usize) -> Vec<WorldVoxel> {
+    let chunk_volume = CHUNK_SIZE_U * CHUNK_SIZE_U * CHUNK_SIZE_U;
+    assert!(num_voxels < chunk_volume as usize, "numVoxels must be less than the chunk volume");
+
+    let mut rng = rand::thread_rng();
+    let mut selected_positions = HashSet::new();
+
+    iter::repeat_with(|| {
+        UVec3::new(
+            rng.gen_range(0..CHUNK_SIZE_U) as u32,
+            rng.gen_range(0..CHUNK_SIZE_U) as u32,
+            rng.gen_range(0..CHUNK_SIZE_U) as u32,
+        )
+    })
+    .filter(|pos| selected_positions.insert(*pos))
+    .take(num_voxels)
+    .map(|position| chunk.chunk_data.get_voxel(position))
+    .collect()
+}
+
+*/

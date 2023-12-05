@@ -1,6 +1,10 @@
 use bevy::{pbr::CascadeShadowConfigBuilder, prelude::*, utils::HashMap};
 use bevy_voxel_world::prelude::*;
 use noise::{HybridMulti, NoiseFn, Perlin};
+
+pub const WHEAT_BLOCK: u8 = 0;
+pub const DIRT_BLOCK: u8 = 1; // TODO: rework as enum?
+
 fn get_voxel_fn() -> Box<dyn FnMut(IVec3) -> WorldVoxel + Send + Sync> {
     // Set up some noise to use as the terrain height map
     let mut noise = HybridMulti::<Perlin>::new(1234);
@@ -35,7 +39,7 @@ fn get_voxel_fn() -> Box<dyn FnMut(IVec3) -> WorldVoxel + Send + Sync> {
 
         if is_ground {
             // Solid voxel of material type 0
-            WorldVoxel::Solid(0)
+            WorldVoxel::Solid(DIRT_BLOCK)
         } else {
             WorldVoxel::Air
         }
