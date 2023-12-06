@@ -20,12 +20,16 @@ struct HudData {
     entities: u32,
 }
 
+#[derive(Component)]
+struct Hud {}
+
 fn render_ui(
     mut commands: Commands,
     textures: Res<TextureAssets>,
     time: Res<Time>,
     mut hud_data: ResMut<HudData>,
     windows: Query<&Window>,
+    hud_query: Query<Entity, With<Hud>>,
     entities: &Entities,
 ) {
     let window: &Window = windows.single();
@@ -34,26 +38,24 @@ fn render_ui(
     if hud_data.time_since_update > 1.0 {
         hud_data.time_since_update = 0.0;
         hud_data.entities = entities.len();
-        info!(
-            // TODO: remove once displaying properly in the UI
-            "{}",
-            ["Entities: ".to_string(), hud_data.entities.to_string()].join(" ")
-        );
     }
-
+    hud_query.for_each(|hud| commands.entity(hud).despawn_recursive());
     // render the score, resources and the entities
     commands
-        .spawn((NodeBundle {
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                flex_direction: FlexDirection::Column,
-                align_items: AlignItems::Start,
-                justify_content: JustifyContent::Start,
+        .spawn((
+            (NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Start,
+                    justify_content: JustifyContent::Start,
+                    ..default()
+                },
                 ..default()
-            },
-            ..default()
-        },))
+            },),
+            Hud {},
+        ))
         .with_children(|children| {
             children.spawn(TextBundle::from_section(
                 "Score: 100",
@@ -82,13 +84,16 @@ fn render_ui(
         });
 
     // draw a crosshair onto the screen
-    commands.spawn(ImageBundle {
-        image: textures.crosshair.clone().into(),
-        style: Style {
-            align_self: AlignSelf::Center,
-            left: Val::Px((window.width() / 2.) - 32.),
+    commands.spawn((
+        (ImageBundle {
+            image: textures.crosshair.clone().into(),
+            style: Style {
+                align_self: AlignSelf::Center,
+                left: Val::Px((window.width() / 2.) - 32.),
+                ..default()
+            },
             ..default()
-        },
-        ..default()
-    });
+        },),
+        Hud {},
+    ));
 }

@@ -8,6 +8,7 @@ pub enum GameControl {
     Space,
     C,
     ClickTarget,
+    OpenMenu,
 }
 
 impl GameControl {
@@ -32,6 +33,7 @@ impl GameControl {
             GameControl::Space => keyboard_input.pressed(KeyCode::Space),
             GameControl::C => keyboard_input.pressed(KeyCode::C),
             GameControl::ClickTarget => mouse_input.pressed(MouseButton::Left),
+            GameControl::OpenMenu => keyboard_input.pressed(KeyCode::Escape),
         }
     }
 }

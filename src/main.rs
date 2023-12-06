@@ -11,8 +11,8 @@ use std::io::Cursor;
 use winit::window::Icon;
 
 fn main() {
-    App::new()
-        .insert_resource(Msaa::Off)
+    let mut app = App::new();
+    app.insert_resource(Msaa::Off)
         .insert_resource(ClearColor(Color::rgb(0.4, 0.4, 0.4)))
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
@@ -29,8 +29,12 @@ fn main() {
         }))
         .add_plugins(VoxelWorldPlugin::default())
         .add_plugins(GamePlugin)
-        .add_systems(Startup, set_window_icon)
-        .run();
+        .add_systems(Startup, set_window_icon);
+    #[cfg(feature = "debug-inspector")]
+    {
+        app.add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::new());
+    }
+    app.run();
 }
 
 // Sets the icon on windows and X11

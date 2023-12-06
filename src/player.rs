@@ -17,7 +17,8 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::Playing), spawn_player)
             .add_systems(Update, move_player.run_if(in_state(GameState::Playing)))
-            .add_systems(Update, player_click.run_if(in_state(GameState::Playing)));
+            .add_systems(Update, player_click.run_if(in_state(GameState::Playing)))
+            .add_systems(Update, open_menu);
     }
 }
 
@@ -72,26 +73,34 @@ fn player_click(
     cam_query: Query<&Transform, (With<VoxelWorldCamera>, Without<Player>)>,
 ) {
     if actions.left_click_crosshair {
-        let cam_transform = cam_query.single();
-        let click_direction = cam_transform.forward().normalize_or_zero();
-        player_query.for_each(|(player_entity, player_transform)| {
-            if let Some(voxel_pos) = paint_on_voxel(
-                &mut voxel_world,
-                player_transform.translation,
-                click_direction,
-            ) {
-                let _managed_id = commands.spawn((
-                    HasPosition { pos: voxel_pos },
-                    PlayerWantsToPaintVoxel {
-                        player: player_entity,
-                        pos: voxel_pos,
-                        paint_as: PaintableResources::SeedCrop(Species::Wheat),
-                    },
-                ));
-                debug!("player painted voxel at {}", voxel_pos);
-            } else {
-                debug!("nothing to paint in direction {}", click_direction)
-            }
-        })
+        if let Ok(cam_transform) = cam_query.get_single() {
+            let click_direction = cam_transform.forward().normalize_or_zero();
+            player_query.for_each(|(player_entity, player_transform)| {
+                if let Some(voxel_pos) = paint_on_voxel(
+                    &mut voxel_world,
+                    player_transform.translation,
+                    click_direction,
+                ) {
+                    let _managed_id = commands.spawn((
+                        HasPosition { pos: voxel_pos },
+                        PlayerWantsToPaintVoxel {
+                            player: player_entity,
+                            pos: voxel_pos,
+                            paint_as: PaintableResources::SeedCrop(Species::Wheat),
+                        },
+                    ));
+                    debug!("player painted voxel at {}", voxel_pos);
+                } else {
+                    debug!("nothing to paint in direction {}", click_direction)
+                }
+            })
+        }
+    }
+}
+
+// FIXME: doesn't seem to do anything
+fn open_menu(mut commands: Commands, actions: Res<Actions>) {
+    if actions.open_menu {
+        commands.spawn(ChangeState(GameState::Menu));
     }
 }

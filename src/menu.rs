@@ -1,8 +1,8 @@
+use crate::core_components::ChangeState;
 use crate::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
 use bevy_voxel_world::prelude::*;
-
 pub struct MenuPlugin;
 
 /// This plugin is responsible for the game menu (containing only one button...)
@@ -186,9 +186,6 @@ fn setup_menu(
                 });
         });
 }
-
-#[derive(Component)]
-struct ChangeState(GameState);
 
 #[derive(Component)]
 struct OpenLink(&'static str);

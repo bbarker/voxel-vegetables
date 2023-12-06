@@ -24,10 +24,15 @@ codegen-units = 1
 inherits = "release"
 lto = "thin"
 
+[dependencies.bevy-inspector-egui]
+version = "0.21.0"
+optional = true
+
 [features]
 dev = [
     "bevy/dynamic_linking",
 ]
+debug-inspector = ["bevy-inspector-egui"]
 
 # All of Bevy's default features exept for the audio related ones (bevy_audio, vorbis), since they clash with bevy_kira_audio
 #   and android_shared_stdcxx, since that is covered in `mobile`

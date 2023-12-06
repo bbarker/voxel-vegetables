@@ -24,6 +24,7 @@ impl Plugin for ActionsPlugin {
 pub struct Actions {
     pub player_movement: Option<Vec3>,
     pub left_click_crosshair: bool,
+    pub open_menu: bool,
 }
 
 pub fn set_playing_actions(
@@ -61,4 +62,5 @@ pub fn set_playing_actions(
     }
 
     actions.left_click_crosshair = GameControl::ClickTarget.pressed(&keyboard_input, &mouse_input);
+    actions.open_menu = GameControl::OpenMenu.pressed(&keyboard_input, &mouse_input);
 }
