@@ -1,5 +1,15 @@
 # A Bevy game template
 
+## Debugging
+
+We can conditionally run the game with the [WorldInspectorPlugin](https://github.com/jakobhellermann/bevy-inspector-egui):
+
+```
+cargo run --features debug-inspector
+```
+
+# Old Template Stuff below: gradually adapt and move up or delete
+
 Template for a Game using the awesome [Bevy engine][bevy] featuring out of the box builds for Windows, Linux, macOS, and Web (Wasm). It also includes the setup for android support.
 
 _Since Bevy is in heavy development, there regularly are unpublished new features or bug fixes. If you like living on the edge, you can use the branch `bevy_main` of this template to be close to the current state of Bevy's main branch_
