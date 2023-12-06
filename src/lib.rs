@@ -52,7 +52,7 @@ impl Plugin for GamePlugin {
             ActionsPlugin,
             InternalAudioPlugin,
             PlayerPlugin,
-            LifeCyclesPlugin,
+            //LifeCyclesPlugin,
             CameraHandlerPlugin,
             UiHandlerPlugin,
         ));
