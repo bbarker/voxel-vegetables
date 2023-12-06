@@ -16,8 +16,9 @@ pub struct Player;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::Playing), spawn_player)
-            .add_systems(Update, move_player.run_if(in_state(GameState::Playing)));
-        // .add_systems(Update, player_click.run_if(in_state(GameState::Playing)));
+            .add_systems(Update, move_player.run_if(in_state(GameState::Playing)))
+            .add_systems(Update, player_click.run_if(in_state(GameState::Playing)))
+            .add_systems(Update, open_menu);
     }
 }
 
@@ -94,5 +95,12 @@ fn player_click(
                 }
             })
         }
+    }
+}
+
+// FIXME: doesn't seem to do anything
+fn open_menu(mut commands: Commands, actions: Res<Actions>) {
+    if actions.open_menu {
+        commands.spawn(ChangeState(GameState::Menu));
     }
 }
