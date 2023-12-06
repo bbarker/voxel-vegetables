@@ -1,3 +1,4 @@
+use bevy::ecs::entity::Entities;
 use bevy::prelude::*;
 
 use crate::{loading::TextureAssets, GameState};
@@ -8,13 +9,37 @@ pub struct UiHandlerPlugin;
 /// is only active during the State `GameState::Playing`
 impl Plugin for UiHandlerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Playing), render_ui);
+        app.insert_resource(HudData::default());
+        app.add_systems(Update, render_ui.run_if(in_state(GameState::Playing)));
     }
 }
 
-fn render_ui(mut commands: Commands, textures: Res<TextureAssets>, windows: Query<&Window>) {
+#[derive(Clone, Debug, Resource, Default)]
+struct HudData {
+    time_since_update: f32,
+    entities: u32,
+}
+
+fn render_ui(
+    mut commands: Commands,
+    textures: Res<TextureAssets>,
+    time: Res<Time>,
+    mut hud_data: ResMut<HudData>,
+    windows: Query<&Window>,
+    entities: &Entities,
+) {
     let window: &Window = windows.single();
-    let world = World::default();
+
+    hud_data.time_since_update += time.delta_seconds();
+    if hud_data.time_since_update > 1.0 {
+        hud_data.time_since_update = 0.0;
+        hud_data.entities = entities.len();
+        info!(
+            // TODO: remove once displaying properly in the UI
+            "{}",
+            ["Entities: ".to_string(), hud_data.entities.to_string()].join(" ")
+        );
+    }
 
     // render the score, resources and the entities
     commands
@@ -47,7 +72,7 @@ fn render_ui(mut commands: Commands, textures: Res<TextureAssets>, windows: Quer
                 },
             ));
             children.spawn(TextBundle::from_section(
-                ["Entities: ".to_string(), world.entities().len().to_string()].join(" "),
+                ["Entities: ".to_string(), hud_data.entities.to_string()].join(" "),
                 TextStyle {
                     font_size: 20.0,
                     color: Color::rgb(0.9, 0.9, 0.9),
