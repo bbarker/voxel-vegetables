@@ -1,4 +1,8 @@
-use crate::map_setup::*;
+use crate::{
+    core_components::{PaintableResources, PlayerWantsToPaintVoxel},
+    map_setup::*,
+    spawner::spawn_organism,
+};
 use bevy::prelude::*;
 use bevy_voxel_world::prelude::*;
 
@@ -20,7 +24,7 @@ pub fn ray_cast_to_voxel(
         .find(|&(_, voxel)| matches!(voxel, WorldVoxel::Solid(_)))
 }
 
-pub fn paint_on_voxel(
+pub fn get_surface_air_voxel(
     voxel_world: &mut VoxelWorld,
     player_position: Vec3,
     look_direction: Vec3,
@@ -30,13 +34,32 @@ pub fn paint_on_voxel(
         let above_pos = vox_pos + IVec3::Y;
         let above_vox = voxel_world.get_voxel(above_pos);
         match (voxel, above_vox) {
-            (WorldVoxel::Solid(DIRT_BLOCK), WorldVoxel::Air) => {
-                voxel_world.set_voxel(above_pos, WorldVoxel::Solid(WHEAT_BLOCK));
-                Some(above_pos)
-            }
+            (WorldVoxel::Solid(DIRT_BLOCK), WorldVoxel::Air) => Some(above_pos),
             _ => None,
         }
     } else {
         None
     }
+}
+
+pub fn paint_voxel_system(
+    mut commands: Commands,
+    mut voxel_world: VoxelWorld,
+    paint_query: Query<(Entity, &PlayerWantsToPaintVoxel)>,
+) {
+    paint_query.for_each(|(paint_entity, want_to_paint)| {
+        // TODO: maybe add more checks to see if it is OK to paint,
+        // but probably don't want to be redundant with get_surface_air_voxel
+        let PaintableResources::SeedCrop(species) = want_to_paint.paint_as.clone();
+        spawn_organism(
+            &mut commands,
+            species,
+            crate::core_components::LifePhase::Seed,
+            want_to_paint.pos,
+            Some(want_to_paint.player),
+        );
+        // FIXME: rework to not be hardcoded  once block types are an enum
+        voxel_world.set_voxel(want_to_paint.pos, WorldVoxel::Solid(WHEAT_BLOCK));
+        commands.entity(paint_entity).despawn();
+    })
 }

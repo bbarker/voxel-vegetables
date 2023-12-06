@@ -8,8 +8,15 @@ pub fn spawn_organism(
     species: Species,
     phase: LifePhase,
     pos: IVec3,
+    player_entity_opt: Option<Entity>,
 ) -> Entity {
-    commands
+    let new_entity_id = commands
         .spawn((species.clone(), phase.clone(), HasPosition { pos }))
-        .id()
+        .id();
+    if let Some(player_entity) = player_entity_opt {
+        commands.entity(new_entity_id).insert(OwnedBy {
+            owner: player_entity,
+        });
+    }
+    new_entity_id
 }

@@ -1,7 +1,7 @@
 use crate::actions::Actions;
 use crate::core_components::*;
 use crate::loading::TextureAssets;
-use crate::voxel_painting::paint_on_voxel;
+use crate::voxel_painting::get_surface_air_voxel;
 use crate::GameState;
 use bevy::prelude::*;
 use bevy_voxel_world::prelude::*;
@@ -76,19 +76,16 @@ fn player_click(
         if let Ok(cam_transform) = cam_query.get_single() {
             let click_direction = cam_transform.forward().normalize_or_zero();
             player_query.for_each(|(player_entity, player_transform)| {
-                if let Some(voxel_pos) = paint_on_voxel(
+                if let Some(voxel_pos) = get_surface_air_voxel(
                     &mut voxel_world,
                     player_transform.translation,
                     click_direction,
                 ) {
-                    let _managed_id = commands.spawn((
-                        HasPosition { pos: voxel_pos },
-                        PlayerWantsToPaintVoxel {
-                            player: player_entity,
-                            pos: voxel_pos,
-                            paint_as: PaintableResources::SeedCrop(Species::Wheat),
-                        },
-                    ));
+                    let _managed_id = commands.spawn((PlayerWantsToPaintVoxel {
+                        player: player_entity,
+                        pos: voxel_pos,
+                        paint_as: PaintableResources::SeedCrop(Species::Wheat),
+                    },));
                     debug!("player painted voxel at {}", voxel_pos);
                 } else {
                     debug!("nothing to paint in direction {}", click_direction)

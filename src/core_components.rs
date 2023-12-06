@@ -5,11 +5,17 @@ use crate::GameState;
 #[derive(Component)]
 pub struct ChangeState(pub GameState);
 
-// we have to be careful about multiple sourced of truth
+// we have to be careful about multiple sources of truth
 #[derive(Eq, PartialEq, Clone, Debug, Component)]
 pub struct HasPosition {
     pub pos: IVec3,
 }
+
+#[derive(Eq, PartialEq, Clone, Debug, Component)]
+pub struct OwnedBy {
+    pub owner: Entity,
+}
+
 #[derive(Eq, PartialEq, Clone, Debug, Component, Deref)]
 pub struct Water(pub u32); // Representing quantity of water currently accessible
 

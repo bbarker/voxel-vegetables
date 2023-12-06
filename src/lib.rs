@@ -22,7 +22,7 @@ use crate::map_setup::map_setup;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
 use crate::ui_handler::UiHandlerPlugin;
-
+use crate::voxel_painting::paint_voxel_system;
 use bevy::app::App;
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -46,16 +46,21 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<GameState>().add_plugins((
-            LoadingPlugin,
-            MenuPlugin,
-            ActionsPlugin,
-            InternalAudioPlugin,
-            PlayerPlugin,
-            LifeCyclesPlugin,
-            CameraHandlerPlugin,
-            UiHandlerPlugin,
-        ));
+        app.add_state::<GameState>()
+            .add_plugins((
+                LoadingPlugin,
+                MenuPlugin,
+                ActionsPlugin,
+                InternalAudioPlugin,
+                PlayerPlugin,
+                LifeCyclesPlugin,
+                CameraHandlerPlugin,
+                UiHandlerPlugin,
+            ))
+            .add_systems(
+                Update,
+                paint_voxel_system.run_if(in_state(GameState::Playing)),
+            );
 
         #[cfg(debug_assertions)]
         {
