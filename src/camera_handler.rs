@@ -42,9 +42,7 @@ fn move_camera(
     })
 }
 
-fn setup_mouse(
-    mut windows: Query<&mut Window>
-) {
+fn setup_mouse(mut windows: Query<&mut Window>) {
     let mut window = windows.single_mut();
 
     window.cursor.visible = false;

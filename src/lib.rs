@@ -10,8 +10,8 @@ mod map_setup;
 mod menu;
 mod player;
 mod spawner;
-mod voxel_painting;
 mod ui_handler;
+mod voxel_painting;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
