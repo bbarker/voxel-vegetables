@@ -47,7 +47,7 @@ pub fn seed_to_germinate_system(
 }
 
 /// We just add a time delay to go from Germinated to Growing
-pub fn germinated_to_growing_system(
+pub fn growth_system(
     time: Res<Time>,
     mut voxel_world: VoxelWorld,
     mut commands: Commands,
@@ -76,7 +76,7 @@ pub fn germinated_to_growing_system(
     )
 }
 
-pub fn growing_to_mature_system(
+pub fn maturation_system(
     time: Res<Time>,
     mut voxel_world: VoxelWorld,
     mut commands: Commands,
@@ -104,7 +104,8 @@ pub fn growing_to_mature_system(
                     commands
                         .entity(entity)
                         .remove::<LifePhase>()
-                        .insert(LifePhase::Mature);
+                        .insert(LifePhase::Mature)
+                        .insert(MatureAgeTimer(0.));
                 } else if water.0 > 0 && soil.0 > 0 && light > 0.01 {
                     // Get rate-limiting resource value
                     // (for now we assume 1:1 usage between each)
@@ -126,6 +127,99 @@ pub fn growing_to_mature_system(
         },
     )
 }
+
+// TODO: check for polination requirements by searching for all nearby
+//     : surface voxels
+/// We just add a time delay to go from Mature to Pollinated, and check
+/// for pollination requirements.
+pub fn pollination_system(
+    time: Res<Time>,
+    mut voxel_world: VoxelWorld,
+    mut commands: Commands,
+    mut query: Query<(
+        Entity,
+        &HasPosition,
+        &Species,
+        &LifePhase,
+        &mut MatureAgeTimer,
+    )>,
+) {
+    query.for_each_mut(
+        |(entity, HasPosition { pos }, species, life_phase, mut timer)| {
+            if *life_phase == LifePhase::Mature {
+                timer.0 -= time.delta_seconds();
+                if timer.0 <= 0.0 {
+                    let phase = LifePhase::Pollinated {
+                        needs: species.fruiting_needs(),
+                    };
+                    paint_voxel_unchecked(&mut voxel_world, *pos, species.block_type(&phase));
+                    commands.entity(entity).remove::<LifePhase>().insert(phase);
+                }
+            }
+        },
+    )
+}
+
+// Similar to the maturation_system
+pub fn fruiting_system(
+    time: Res<Time>,
+    mut voxel_world: VoxelWorld,
+    mut commands: Commands,
+    mut query: Query<(
+        Entity,
+        &HasPosition,
+        &Species,
+        &mut LifePhase,
+        &Water,
+        &Soil,
+    )>,
+) {
+    let light = 1.0; // TODO: adjust based on weather
+    query.for_each_mut(
+        |(entity, HasPosition { pos }, species, mut life_phase, water, soil)| {
+            if let LifePhase::Pollinated { mut needs } = life_phase.clone() {
+                // Check there are some non-zero conditions for growth
+                if needs.time <= 0.0 && needs.light <= 0.0 && *needs.water == 0 && *needs.soil == 0
+                {
+                    paint_voxel_unchecked(
+                        &mut voxel_world,
+                        *pos,
+                        species.block_type(&LifePhase::Mature),
+                    );
+                    commands
+                        .entity(entity)
+                        .remove::<LifePhase>()
+                        .insert(LifePhase::Fruiting);
+                } else if water.0 > 0 && soil.0 > 0 && light > 0.01 {
+                    // Get rate-limiting resource value
+                    // (for now we assume 1:1 usage between each)
+                    let growth_value = f32::min(f32::min(water.0 as f32, soil.0 as f32), light);
+                    if needs.time >= 0. {
+                        needs.time -= time.delta_seconds();
+                    }
+                    if needs.light >= 0. {
+                        needs.light -= light;
+                    }
+                    needs.water = Water(needs.water.saturating_sub(growth_value as u32));
+                    needs.soil = Soil(needs.soil.saturating_sub(growth_value as u32));
+                    *life_phase = LifePhase::Pollinated { needs };
+                } else {
+                    // TODO: maybe add some health logic later where entities could lose health
+                    //     : if resources are not enough to maintain life
+                }
+            }
+        },
+    )
+}
+
+//
+// pub fn lifecycle_system
+
+// // TODO: for now, we just use the avg generations - introduce randomness
+// let generation_lifetime = species
+//     .min_generations()
+//     .saturating_add(species.max_generations())
+//     / 2;
 
 // TODO: needs to actually relate to chunks and blocks
 pub fn spawn_life_in_chunk(
@@ -160,14 +254,16 @@ impl Plugin for LifeCyclesPlugin {
             Update,
             seed_to_germinate_system.run_if(in_state(GameState::Playing)),
         )
+        .add_systems(Update, growth_system.run_if(in_state(GameState::Playing)))
         .add_systems(
             Update,
-            germinated_to_growing_system.run_if(in_state(GameState::Playing)),
+            maturation_system.run_if(in_state(GameState::Playing)),
         )
         .add_systems(
             Update,
-            growing_to_mature_system.run_if(in_state(GameState::Playing)),
+            pollination_system.run_if(in_state(GameState::Playing)),
         )
+        .add_systems(Update, fruiting_system.run_if(in_state(GameState::Playing)))
         .add_systems(Startup, init_life);
     }
 }
