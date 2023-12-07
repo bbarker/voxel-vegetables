@@ -76,35 +76,55 @@ pub fn germinated_to_growing_system(
     )
 }
 
-// TODO: add voxel painting logic and resource requirements
 pub fn growing_to_mature_system(
     time: Res<Time>,
+    mut voxel_world: VoxelWorld,
     mut commands: Commands,
-    mut query: Query<(Entity, &mut LifePhase, &Water, &Soil)>,
+    mut query: Query<(
+        Entity,
+        &HasPosition,
+        &Species,
+        &mut LifePhase,
+        &Water,
+        &Soil,
+    )>,
 ) {
     let light = 1.0; // TODO: adjust based on weather
-    query.for_each_mut(|(entity, mut life_phase, water, soil)| {
-        if let LifePhase::Growing { mut needs } = life_phase.clone() {
-            // Check there are some non-zero conditions for growth
-            if needs.time <= 0.0 && needs.light <= 0.0 && *needs.water == 0 && *needs.soil == 0 {
-                commands
-                    .entity(entity)
-                    .remove::<LifePhase>()
-                    .insert(LifePhase::Mature);
-            } else if water.0 > 0 && soil.0 > 0 && light > 0.01 {
-                // Get rate-limiting resource value
-                // (for now we assume 1:1 usage between each)
-                let growth_value = f32::min(f32::min(water.0 as f32, soil.0 as f32), light);
-                needs.time -= time.delta_seconds();
-                needs.water = Water(needs.water.saturating_sub(growth_value as u32));
-                needs.soil = Soil(needs.soil.saturating_sub(growth_value as u32));
-                *life_phase = LifePhase::Growing { needs };
-            } else {
-                // TODO: maybe add some health logic later where entities could lose health
-                //     : if resources are not enough to maintain life
+    query.for_each_mut(
+        |(entity, HasPosition { pos }, species, mut life_phase, water, soil)| {
+            if let LifePhase::Growing { mut needs } = life_phase.clone() {
+                // Check there are some non-zero conditions for growth
+                if needs.time <= 0.0 && needs.light <= 0.0 && *needs.water == 0 && *needs.soil == 0
+                {
+                    paint_voxel_unchecked(
+                        &mut voxel_world,
+                        *pos,
+                        species.block_type(&LifePhase::Mature),
+                    );
+                    commands
+                        .entity(entity)
+                        .remove::<LifePhase>()
+                        .insert(LifePhase::Mature);
+                } else if water.0 > 0 && soil.0 > 0 && light > 0.01 {
+                    // Get rate-limiting resource value
+                    // (for now we assume 1:1 usage between each)
+                    let growth_value = f32::min(f32::min(water.0 as f32, soil.0 as f32), light);
+                    if needs.time >= 0. {
+                        needs.time -= time.delta_seconds();
+                    }
+                    if needs.light >= 0. {
+                        needs.light -= light;
+                    }
+                    needs.water = Water(needs.water.saturating_sub(growth_value as u32));
+                    needs.soil = Soil(needs.soil.saturating_sub(growth_value as u32));
+                    *life_phase = LifePhase::Growing { needs };
+                } else {
+                    // TODO: maybe add some health logic later where entities could lose health
+                    //     : if resources are not enough to maintain life
+                }
             }
-        }
-    })
+        },
+    )
 }
 
 // TODO: needs to actually relate to chunks and blocks

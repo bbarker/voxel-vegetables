@@ -98,6 +98,10 @@ impl Species {
     }
 }
 
+//TODO: in general, when there are a lot of entities of a given
+// component, it probably makes sense to not use an enum for the
+// component itself, but instead for the individual variants,
+// This way the ECS can likely optimize the query
 #[derive(PartialEq, Clone, Debug, Component)]
 pub enum LifePhase {
     Seed,
