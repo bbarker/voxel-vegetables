@@ -1,8 +1,4 @@
-use crate::{
-    core_components::{PaintableResources, PlayerWantsToPaintVoxel},
-    map_setup::*,
-    spawner::spawn_organism,
-};
+use crate::{block_types::BlockType, core_components::*, spawner::spawn_organism};
 use bevy::prelude::*;
 use bevy_voxel_world::prelude::*;
 
@@ -33,9 +29,11 @@ pub fn get_surface_air_voxel(
     {
         let above_pos = vox_pos + IVec3::Y;
         let above_vox = voxel_world.get_voxel(above_pos);
-        match (voxel, above_vox) {
-            (WorldVoxel::Solid(DIRT_BLOCK), WorldVoxel::Air) => Some(above_pos),
-            _ => None,
+        let vox_pair = (voxel, above_vox);
+        if vox_pair == (WorldVoxel::Solid(BlockType::Dirt.index()), WorldVoxel::Air) {
+            Some(above_pos)
+        } else {
+            None
         }
     } else {
         None
@@ -53,13 +51,14 @@ pub fn paint_voxel_system(
         let PaintableResources::SeedCrop(species) = want_to_paint.paint_as.clone();
         spawn_organism(
             &mut commands,
-            species,
+            species.clone(),
             crate::core_components::LifePhase::Seed,
             want_to_paint.pos,
             Some(want_to_paint.player),
         );
-        // FIXME: rework to not be hardcoded  once block types are an enum
-        voxel_world.set_voxel(want_to_paint.pos, WorldVoxel::Solid(WHEAT_BLOCK));
+
+        let block_type = species.block_type(&SEED_PHASE);
+        voxel_world.set_voxel(want_to_paint.pos, WorldVoxel::Solid(block_type.index()));
         commands.entity(paint_entity).despawn();
     })
 }

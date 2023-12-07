@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::GameState;
+use crate::{block_types::BlockType, GameState};
 
 #[derive(Component)]
 pub struct ChangeState(pub GameState);
@@ -83,6 +83,19 @@ impl Species {
             Species::Wheat => 10,
         }
     }
+
+    pub fn block_type(&self, phase: &LifePhase) -> BlockType {
+        match (self, phase) {
+            (Species::Apple, LifePhase::Seed) => BlockType::SeedPlanted,
+            (Species::Apple, LifePhase::Germinated) => BlockType::SeedPlanted,
+            (Species::Apple, LifePhase::Growing { .. }) => BlockType::AppleSapling,
+            (Species::Apple, LifePhase::Mature) => BlockType::AppleTree,
+            (Species::Wheat, LifePhase::Seed) => BlockType::SeedPlanted,
+            (Species::Wheat, LifePhase::Germinated) => BlockType::SeedPlanted,
+            (Species::Wheat, LifePhase::Growing { .. }) => BlockType::WheatSprouts,
+            (Species::Wheat, LifePhase::Mature) => BlockType::Wheat,
+        }
+    }
 }
 
 #[derive(PartialEq, Clone, Debug, Component)]
@@ -94,6 +107,8 @@ pub enum LifePhase {
     // Pollinated,
     // Fruiting,
 }
+
+pub const SEED_PHASE: LifePhase = LifePhase::Seed;
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub enum PaintableResources {
