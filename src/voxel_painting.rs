@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_voxel_world::prelude::*;
 
 const STEP_SIZE: f32 = 0.99;
-const MAX_SEARCH_DISTANCE: f32 = 518.; // ceil(512/0.99)
+const MAX_SEARCH_DISTANCE: f32 = 518.; // ceil(512/STEP_SIZE)
 
 pub fn ray_cast_to_voxel(
     voxel_world: &VoxelWorld,
@@ -58,7 +58,13 @@ pub fn paint_voxel_system(
         );
 
         let block_type = species.block_type(&SEED_PHASE);
-        voxel_world.set_voxel(want_to_paint.pos, WorldVoxel::Solid(block_type.index()));
+        paint_voxel_unchecked(&mut voxel_world, want_to_paint.pos, block_type);
         commands.entity(paint_entity).despawn();
     })
+}
+
+/// It is assumed that the type of voxel to be painted is correct according
+/// to the game logic, as `paint_voxel_unchecked` does no checking
+pub fn paint_voxel_unchecked(voxel_world: &mut VoxelWorld, pos: IVec3, block_type: BlockType) {
+    voxel_world.set_voxel(pos, WorldVoxel::Solid(block_type.index()));
 }

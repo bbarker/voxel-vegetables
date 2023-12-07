@@ -1,13 +1,17 @@
 use crate::core_components::*;
+use crate::voxel_painting::paint_voxel_unchecked;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy_voxel_world::prelude::*;
 use std::collections::HashSet;
 
 pub fn seed_to_germinate_system(
     time: Res<Time>,
     mut commands: Commands,
+    mut voxel_world: VoxelWorld,
     mut query: Query<(
         Entity,
+        &HasPosition,
         &Species,
         &LifePhase,
         &mut GerminationTimer,
@@ -15,45 +19,64 @@ pub fn seed_to_germinate_system(
         &Soil,
     )>,
 ) {
-    query.for_each_mut(|(entity, species, life_phase, mut timer, water, soil)| {
-        if *life_phase == LifePhase::Seed {
-            let needs = species.germination_needs();
+    query.for_each_mut(
+        |(entity, HasPosition { pos }, species, life_phase, mut timer, water, soil)| {
+            if *life_phase == LifePhase::Seed {
+                let needs = species.germination_needs();
 
-            timer.0 -= time.delta_seconds();
+                timer.0 -= time.delta_seconds();
 
-            if timer.0 <= 0.0 && water.0 >= needs.water.0 && soil.0 >= needs.soil.0 {
-                // If conditions are met, transition from Seed to Germinated
-                commands
-                    .entity(entity)
-                    .remove::<LifePhase>()
-                    .remove::<GerminationTimer>()
-                    // We just add a time delay to go from Germinated to Growing
-                    .insert(GerminationTimer(0.0))
-                    .insert(LifePhase::Germinated {/* ... */});
+                if timer.0 <= 0.0 && water.0 >= needs.water.0 && soil.0 >= needs.soil.0 {
+                    // If conditions are met, transition from Seed to Germinated
+                    commands
+                        .entity(entity)
+                        .remove::<LifePhase>()
+                        .remove::<GerminationTimer>()
+                        // We just add a time delay to go from Germinated to Growing
+                        .insert(GerminationTimer(0.0))
+                        .insert(LifePhase::Germinated {/* ... */});
+                    paint_voxel_unchecked(
+                        &mut voxel_world,
+                        *pos,
+                        species.block_type(&LifePhase::Germinated),
+                    );
+                }
             }
-        }
-    })
+        },
+    )
 }
 
 /// We just add a time delay to go from Germinated to Growing
 pub fn germinated_to_growing_system(
     time: Res<Time>,
+    mut voxel_world: VoxelWorld,
     mut commands: Commands,
-    mut query: Query<(Entity, &Species, &LifePhase, &mut GerminationTimer)>,
+    mut query: Query<(
+        Entity,
+        &HasPosition,
+        &Species,
+        &LifePhase,
+        &mut GerminationTimer,
+    )>,
 ) {
-    query.for_each_mut(|(entity, species, life_phase, mut timer)| {
-        if *life_phase == LifePhase::Germinated {
-            timer.0 -= time.delta_seconds();
+    query.for_each_mut(
+        |(entity, HasPosition { pos }, species, life_phase, mut timer)| {
+            if *life_phase == LifePhase::Germinated {
+                timer.0 -= time.delta_seconds();
 
-            if timer.0 <= 0.0 {
-                commands.entity(entity).insert(LifePhase::Growing {
-                    needs: species.growing_needs(),
-                });
+                if timer.0 <= 0.0 {
+                    let phase = LifePhase::Growing {
+                        needs: species.growing_needs(),
+                    };
+                    paint_voxel_unchecked(&mut voxel_world, *pos, species.block_type(&phase));
+                    commands.entity(entity).remove::<LifePhase>().insert(phase);
+                }
             }
-        }
-    })
+        },
+    )
 }
 
+// TODO: add voxel painting logic and resource requirements
 pub fn growing_to_mature_system(
     time: Res<Time>,
     mut commands: Commands,
