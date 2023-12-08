@@ -2,7 +2,7 @@
 name = "speed_farmer"
 version = "0.1.0"
 publish = false
-authors = ["Brandon Barker <brandon.barker@gmail.com>"]
+authors = ["Brandon Barker <brandon.barker@gmail.com>", "Space Nerd <spacenerddev@gmail.com>"]
 edition = "2021"
 exclude = ["dist", "build", "assets", "credits"]
 
