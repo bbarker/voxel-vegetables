@@ -58,6 +58,8 @@ impl BlockType {
 }
 
 lazy_static! {
+    // TODO: use a macro that can iterate over enum values, then do a match
+    //     : to make sure we cover all insertions.
     pub static ref BLOCK_TO_TILES_MAP: HashMap<BlockType, VoxTextureArray> = {
         let mut tmap = HashMap::new();
         tmap.insert(
@@ -74,7 +76,7 @@ lazy_static! {
         );
         tmap.insert(
             BlockType::SeedPlanted,
-            VoxTextureArray([VoxTexture::Dirt, VoxTexture::Dirt, VoxTexture::Dirt]),
+            VoxTextureArray([VoxTexture::Grass, VoxTexture::Grass, VoxTexture::Grass]),
         );
         tmap.insert(
             BlockType::WheatSprouts,

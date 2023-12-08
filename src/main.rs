@@ -1,16 +1,24 @@
 // disable console on windows for release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod build_common;
+
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy::winit::WinitWindows;
 use bevy::DefaultPlugins;
 use bevy_voxel_world::prelude::*;
+use build_common::*;
 use speed_farmer::GamePlugin; // ToDo: Replace bevy_game with your new crate name.
 use std::io::Cursor;
 use winit::window::Icon;
 
 fn main() {
+    let tile_texture_file_path = tile_texture_pack_rel_path();
+    let tile_texture_file = tile_texture_file_path
+        .to_str()
+        .unwrap_or_else(|| panic!("Couldn't find texture file '{:?}'!", tile_texture_file_path));
+    info!("tile texture file is {}", tile_texture_file);
     let mut app = App::new();
     app.insert_resource(Msaa::Off)
         .insert_resource(ClearColor(Color::rgb(0.4, 0.4, 0.4)))
@@ -27,7 +35,7 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(VoxelWorldPlugin::default().with_voxel_texture("example_voxel_texture.png", 3)) // TODO: don't harcode 3
+        .add_plugins(VoxelWorldPlugin::default().with_voxel_texture(tile_texture_file, 3)) // TODO: don't harcode 3
         .add_plugins(GamePlugin)
         .add_systems(Startup, set_window_icon);
     #[cfg(feature = "debug-inspector")]

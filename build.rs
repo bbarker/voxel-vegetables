@@ -1,21 +1,20 @@
 extern crate embed_resource;
-use image::{imageops, GenericImageView, RgbaImage};
+
+#[path = "src/build_common.rs"]
+mod build_common;
+use build_common::*;
+use image::{imageops, RgbaImage};
 use std::env;
 use std::fs;
-use std::path::Path;
 
 fn main() {
-    let source_path = Path::new("source_assets/");
-    let dest_path = Path::new("assets/textures/");
     let file_names = ["grass_top.png", "dirt.png", "water.png"]; // Example filenames
 
     // Load the first image to get width and height
-    let first_image_path = source_path.join(file_names[0]);
-    let first_image = image::open(first_image_path).expect("Failed to load first image");
-    let (width, height) = first_image.dimensions();
-    let target_size = 16;
+    let source_path = asset_source_path();
+    let target_size = 32;
 
-    let mut concatenated_image = RgbaImage::new(width, height * file_names.len() as u32);
+    let mut concatenated_image = RgbaImage::new(target_size, target_size * file_names.len() as u32);
 
     file_names.iter().enumerate().for_each(|(ii, file_name)| {
         let image_path = source_path.join(file_name);
@@ -31,8 +30,8 @@ fn main() {
         );
     });
 
-    let dest_file = dest_path.join("tile_textures.png");
-    fs::create_dir_all(dest_path).expect("Failed to create destination directory");
+    let dest_file = tile_texture_pack_path();
+    fs::create_dir_all(asset_texture_path()).expect("Failed to create destination directory");
     concatenated_image
         .save(dest_file.clone())
         .expect("Failed to save concatenated image");

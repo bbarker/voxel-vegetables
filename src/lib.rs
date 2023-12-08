@@ -3,6 +3,7 @@
 mod actions;
 mod audio;
 mod block_types;
+mod build_common;
 mod camera_handler;
 mod core_components;
 mod lifecycles;
