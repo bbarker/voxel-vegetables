@@ -19,6 +19,7 @@ struct HudData {
     time_since_update: f32,
     entities: u32,
     resource_count: u32,
+    score: u32,
 }
 
 #[derive(Component)]
@@ -41,11 +42,17 @@ fn render_ui(
     if hud_data.time_since_update > 1.0 {
         hud_data.time_since_update = 0.0;
         hud_data.entities = entities.len();
+        hud_data.score = inventory_query
+            .iter()
+            .map(|inv| inv.resources.values().sum::<u32>())
+            .sum();
         hud_data.resource_count = inventory_query
             .iter()
             .map(|inv| inv.resources.values().sum::<u32>())
             .sum();
     }
+
+
     hud_query.for_each(|hud| commands.entity(hud).despawn_recursive());
     // render the score, resources and the entities
     commands
@@ -65,7 +72,7 @@ fn render_ui(
         ))
         .with_children(|children| {
             children.spawn(TextBundle::from_section(
-                "Score: 100",
+                format!("Score: {}", hud_data.score),
                 TextStyle {
                     font_size: 40.0,
                     color: Color::rgb(0.9, 0.9, 0.9),
