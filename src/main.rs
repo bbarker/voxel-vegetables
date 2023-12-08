@@ -27,7 +27,7 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(VoxelWorldPlugin::default())
+        .add_plugins(VoxelWorldPlugin::default().with_voxel_texture("example_voxel_texture.png", 3)) // TODO: don't harcode 3
         .add_plugins(GamePlugin)
         .add_systems(Startup, set_window_icon);
     #[cfg(feature = "debug-inspector")]

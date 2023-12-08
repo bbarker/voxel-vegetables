@@ -2,6 +2,7 @@ use crate::block_types::*;
 use bevy::{pbr::CascadeShadowConfigBuilder, prelude::*, utils::HashMap};
 use bevy_voxel_world::prelude::*;
 use noise::{HybridMulti, NoiseFn, Perlin};
+use std::sync::Arc;
 
 fn get_voxel_fn() -> Box<dyn FnMut(IVec3) -> WorldVoxel + Send + Sync> {
     // Set up some noise to use as the terrain height map
@@ -57,6 +58,12 @@ pub fn map_setup(mut commands: Commands) {
         // A new closure is fetched for each chunk.
         voxel_lookup_delegate: Box::new(move |_chunk_pos| get_voxel_fn()),
         // `get_voxel_fn` is defined below
+        texture_index_mapper: Arc::new(|vox_mat: u8| {
+            BLOCK_TO_TILES_MAP
+                .get(&BlockType::from_unsafe(vox_mat))
+                .unwrap_or(&GRASS_TEXTURE_ARRAY)
+                .indices_u32()
+        }),
         ..Default::default()
     });
 

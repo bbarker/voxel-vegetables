@@ -247,7 +247,6 @@ pub fn lifecycle_system(
                         .into_iter()
                         .collect(),
                     };
-                    info!("created collect: {:?}", collect_resource);
                     commands.spawn(collect_resource);
                 }
                 // TODO: for now, we just use the avg generations - introduce randomness
@@ -315,12 +314,10 @@ pub fn resource_collection_system(
                 acc_map.insert(collect.owner, new_collect);
                 acc_map
             });
-        info!("player_new_resources: {:?}", player_new_resources);
         player_query.for_each_mut(|(player, mut inventory)| {
             if let Some(new_resource) = player_new_resources.remove(&player) {
                 (*inventory).add_resources(new_resource.resource);
             }
-            info!("inventory: {:?}", inventory);
         });
         resource_query.for_each(|(entity, _)| {
             commands.entity(entity).despawn();
