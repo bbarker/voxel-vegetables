@@ -8,7 +8,15 @@ use std::env;
 use std::fs;
 
 fn main() {
-    let file_names = ["grass_top.png", "dirt.png", "water.png"]; // Example filenames
+    let file_names = [
+        "nothing.png",
+        "grass_top.png",
+        "dirt.png",
+        "water.png",
+        "grass1.png",
+        "grass_tan.png",
+        "grass_brown.png",
+    ]; // Example filenames
 
     // Load the first image to get width and height
     let source_path = asset_source_path();

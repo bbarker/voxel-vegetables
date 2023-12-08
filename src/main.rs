@@ -1,16 +1,19 @@
 // disable console on windows for release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod block_types;
 mod build_common;
 
+use crate::block_types::*;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy::winit::WinitWindows;
 use bevy::DefaultPlugins;
 use bevy_voxel_world::prelude::*;
 use build_common::*;
-use speed_farmer::GamePlugin; // ToDo: Replace bevy_game with your new crate name.
+use speed_farmer::GamePlugin;
 use std::io::Cursor;
+use strum::EnumCount; // ToDo: Replace bevy_game with your new crate name.
 use winit::window::Icon;
 
 fn main() {
@@ -35,7 +38,10 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(VoxelWorldPlugin::default().with_voxel_texture(tile_texture_file, 3)) // TODO: don't harcode 3
+        .add_plugins(
+            VoxelWorldPlugin::default()
+                .with_voxel_texture(tile_texture_file, VoxTexture::COUNT as u32),
+        )
         .add_plugins(GamePlugin)
         .add_systems(Startup, set_window_icon);
     #[cfg(feature = "debug-inspector")]
