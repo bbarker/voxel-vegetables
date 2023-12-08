@@ -8,6 +8,12 @@ We can conditionally run the game with the [WorldInspectorPlugin](https://github
 cargo run --features debug-inspector
 ```
 
+## Credits
+
+### Art
+ - Voxel pack (base) by Kenney Vleugels for Kenney (www.kenney.nl)
+
+
 # Old Template Stuff below: gradually adapt and move up or delete
 
 Template for a Game using the awesome [Bevy engine][bevy] featuring out of the box builds for Windows, Linux, macOS, and Web (Wasm). It also includes the setup for android support.
