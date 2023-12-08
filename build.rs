@@ -27,7 +27,7 @@ fn main() {
             &mut concatenated_image,
             &image,
             0,
-            ii as i64 * (height as i64),
+            ii as i64 * (target_size as i64),
         );
     });
 
