@@ -9,8 +9,9 @@ pub enum BlockType {
     Wheat,
     AppleSapling,
     AppleTree,
+    DeadTree,
     // AppleTreeWithApples,
-    // Nothing, // Keep Nothing as last in enum
+    Nothing, // Keep Nothing as last in enum
 }
 
 impl BlockType {

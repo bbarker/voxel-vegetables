@@ -18,6 +18,7 @@ pub fn spawn_organism(
             Water(1),              // TODO: hardcoded for now, should be species-specific
             Soil(1),               // TODO: hardcoded for now, should be species-specific
             GerminationTimer(5.0), // TODO: hardcoded for now, should be species-specific
+            Generations(0),
         ))
         .id();
     if let Some(player_entity) = player_entity_opt {
