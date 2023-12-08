@@ -2,6 +2,7 @@ use crate::core_components::*;
 use crate::voxel_painting::paint_voxel_unchecked;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 use bevy_voxel_world::prelude::*;
 use std::collections::HashSet;
 
@@ -172,11 +173,12 @@ pub fn fruiting_system(
         &mut LifePhase,
         &Water,
         &Soil,
+        &mut Generations,
     )>,
 ) {
     let light = 1.0; // TODO: adjust based on weather
     query.for_each_mut(
-        |(entity, HasPosition { pos }, species, mut life_phase, water, soil)| {
+        |(entity, HasPosition { pos }, species, mut life_phase, water, soil, mut generations)| {
             if let LifePhase::Pollinated { mut needs } = life_phase.clone() {
                 // Check there are some non-zero conditions for growth
                 if needs.time <= 0.0 && needs.light <= 0.0 && *needs.water == 0 && *needs.soil == 0
@@ -186,6 +188,7 @@ pub fn fruiting_system(
                         *pos,
                         species.block_type(&LifePhase::Mature),
                     );
+                    generations.0 = generations.0.saturating_add(1);
                     commands
                         .entity(entity)
                         .remove::<LifePhase>()
@@ -212,14 +215,118 @@ pub fn fruiting_system(
     )
 }
 
-//
-// pub fn lifecycle_system
+/// Either sends the plant to death or back to mature. The player may gain resources
+pub fn lifecycle_system(
+    mut voxel_world: VoxelWorld,
+    mut commands: Commands,
+    mut query: Query<(
+        Entity,
+        &HasPosition,
+        &Species,
+        &LifePhase,
+        &Generations,
+        Option<&OwnedBy>,
+    )>,
+) {
+    query.for_each_mut(
+        |(entity, HasPosition { pos }, species, life_phase, generations, owned_by)| {
+            if *life_phase == LifePhase::Fruiting {
+                if let Some(OwnedBy { owner }) = owned_by {
+                    let collect_resource = CollectResource {
+                        owner: *owner,
+                        resource: vec![
+                            (
+                                FarmResource::Seeds(species.clone()),
+                                species.seeds_per_generation(),
+                            ),
+                            (
+                                FarmResource::FoodValue(species.clone()),
+                                species.food_value(),
+                            ),
+                        ]
+                        .into_iter()
+                        .collect(),
+                    };
+                    info!("created collect: {:?}", collect_resource);
+                    commands.spawn(collect_resource);
+                }
+                // TODO: for now, we just use the avg generations - introduce randomness
+                let generation_lifetime = species
+                    .min_generations()
+                    .saturating_add(species.max_generations())
+                    / 2;
+                if generations.0 > generation_lifetime {
+                    paint_voxel_unchecked(
+                        &mut voxel_world,
+                        *pos,
+                        species.block_type(&LifePhase::Death),
+                    );
+                    commands
+                        .entity(entity)
+                        .remove::<LifePhase>()
+                        .insert(LifePhase::Death)
+                        .insert(DecayTimer(species.decay_time()));
+                } else {
+                    paint_voxel_unchecked(
+                        &mut voxel_world,
+                        *pos,
+                        species.block_type(&LifePhase::Mature),
+                    );
+                    commands
+                        .entity(entity)
+                        .remove::<LifePhase>()
+                        .insert(LifePhase::Mature);
+                }
+            }
+        },
+    )
+}
 
-// // TODO: for now, we just use the avg generations - introduce randomness
-// let generation_lifetime = species
-//     .min_generations()
-//     .saturating_add(species.max_generations())
-//     / 2;
+pub fn decay_system(
+    time: Res<Time>,
+    mut voxel_world: VoxelWorld,
+    mut commands: Commands,
+    mut query: Query<(Entity, &HasPosition, &mut DecayTimer)>,
+) {
+    query.for_each_mut(|(entity, HasPosition { pos }, mut timer)| {
+        timer.0 -= time.delta_seconds();
+        if timer.0 <= 0. {
+            // TODO: look into Unset vs Air; we depend on Air but does
+            //     : Unset just change back to the original block type?
+            voxel_world.set_voxel(*pos, WorldVoxel::Air);
+            commands.entity(entity).despawn();
+        }
+    })
+}
+
+pub fn resource_collection_system(
+    mut commands: Commands,
+    mut player_query: Query<(Entity, &mut PlayerInventory)>,
+    resource_query: Query<(Entity, &CollectResource)>,
+) {
+    if !resource_query.is_empty() {
+        let mut player_new_resources: HashMap<Entity, CollectResource> = resource_query
+            .into_iter()
+            .fold(HashMap::new(), |mut acc_map, (_, collect)| {
+                let new_collect = acc_map
+                    .remove(&collect.owner)
+                    .unwrap_or(CollectResource::new(collect.owner))
+                    .add(collect.clone()); // TODO: can we avoid this clone?
+                acc_map.insert(collect.owner, new_collect);
+                acc_map
+            });
+        info!("player_new_resources: {:?}", player_new_resources);
+        player_query.for_each_mut(|(player, mut inventory)| {
+            if let Some(new_resource) = player_new_resources.remove(&player) {
+                (*inventory).add_resources(new_resource.resource);
+            }
+            info!("inventory: {:?}", inventory);
+        });
+        resource_query.for_each(|(entity, _)| {
+            commands.entity(entity).despawn();
+        })
+    }
+}
 
 // TODO: needs to actually relate to chunks and blocks
 pub fn spawn_life_in_chunk(
@@ -264,6 +371,15 @@ impl Plugin for LifeCyclesPlugin {
             pollination_system.run_if(in_state(GameState::Playing)),
         )
         .add_systems(Update, fruiting_system.run_if(in_state(GameState::Playing)))
+        .add_systems(
+            Update,
+            lifecycle_system.run_if(in_state(GameState::Playing)),
+        )
+        .add_systems(Update, decay_system.run_if(in_state(GameState::Playing)))
+        .add_systems(
+            Update,
+            resource_collection_system.run_if(in_state(GameState::Playing)),
+        )
         .add_systems(Startup, init_life);
     }
 }

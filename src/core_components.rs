@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 
 use crate::{block_types::BlockType, GameState};
 
@@ -23,7 +23,7 @@ pub struct Water(pub u32); // Representing quantity of water currently accessibl
 pub struct Soil(pub u32); // Representing quantity of soil currently accessible
 
 /// Used twice: for initial germination, and to go from germination to growing
-#[derive(Clone, Debug, Component)]
+#[derive(Clone, Debug, Component, Deref)]
 pub struct GerminationTimer(pub f32); // Timer to track time for germination
 
 pub struct GerminationNeeds {
@@ -105,6 +105,19 @@ impl Species {
         }
     }
 
+    pub fn seeds_per_generation(&self) -> u32 {
+        match self {
+            Species::Apple => 1500,
+            Species::Wheat => 10000, // 30412800 - actual estimate per chunk if we had real wheat
+        }
+    }
+    pub fn food_value(&self) -> u32 {
+        match self {
+            Species::Apple => 10,
+            Species::Wheat => 2,
+        }
+    }
+
     pub fn wild_organisms_per_chunk(&self) -> u16 {
         match self {
             Species::Apple => 1,
@@ -131,12 +144,12 @@ impl Species {
         }
     }
 
-    pub fn self_pollinates(&self) -> bool {
-        match self {
-            Species::Apple => false,
-            Species::Wheat => true,
-        }
-    }
+    // pub fn self_pollinates(&self) -> bool {
+    //     match self {
+    //         Species::Apple => false,
+    //         Species::Wheat => true,
+    //     }
+    // }
 
     pub fn min_generations(&self) -> u32 {
         match self {
@@ -149,6 +162,13 @@ impl Species {
         match self {
             Species::Apple => 200,
             Species::Wheat => 1,
+        }
+    }
+
+    pub fn decay_time(&self) -> f32 {
+        match self {
+            Species::Apple => 200.,
+            Species::Wheat => 0.,
         }
     }
 }
@@ -168,8 +188,11 @@ pub enum LifePhase {
     Death,
 }
 
-#[derive(PartialEq, Clone, Debug, Component)]
+#[derive(PartialEq, Clone, Debug, Component, Deref)]
 pub struct Generations(pub u32);
+
+#[derive(Clone, Debug, Component, Deref)]
+pub struct DecayTimer(pub f32);
 
 pub const SEED_PHASE: LifePhase = LifePhase::Seed;
 
@@ -183,4 +206,74 @@ pub struct PlayerWantsToPaintVoxel {
     pub player: Entity,
     pub pos: IVec3,
     pub paint_as: PaintableResources,
+}
+
+#[derive(Eq, PartialEq, Clone, Debug, Hash)]
+pub enum FarmResource {
+    FoodValue(Species),
+    Seeds(Species),
+}
+
+pub fn add_resources(
+    res_map1: HashMap<FarmResource, u32>,
+    res_map2: HashMap<FarmResource, u32>,
+) -> HashMap<FarmResource, u32> {
+    res_map1
+        .into_iter()
+        .chain(res_map2)
+        .fold(HashMap::new(), |mut acc_map, (res, amount)| {
+            *acc_map.entry(res).or_insert(0) += amount;
+            acc_map
+        })
+}
+
+#[derive(Eq, PartialEq, Clone, Debug, Component)]
+pub struct PlayerInventory {
+    pub resources: HashMap<FarmResource, u32>,
+}
+
+impl PlayerInventory {
+    pub fn new() -> Self {
+        PlayerInventory {
+            resources: HashMap::new(),
+        }
+    }
+
+    // pub fn add_resources(mut self, res_map: HashMap<FarmResource, u32>) {
+    //     self.resources = add_resources(self.resources, res_map);
+    // }
+
+    pub fn add_resources(&mut self, res_map: HashMap<FarmResource, u32>) {
+        self.resources = add_resources(self.resources.clone(), res_map);
+    }
+}
+
+// TODO: it was mentioned using Events might be an alternative to this
+#[derive(Eq, PartialEq, Clone, Debug, Component)]
+pub struct CollectResource {
+    pub owner: Entity,
+    pub resource: HashMap<FarmResource, u32>,
+}
+
+impl CollectResource {
+    pub fn new(owner: Entity) -> Self {
+        CollectResource {
+            owner,
+            resource: HashMap::new(),
+        }
+    }
+
+    /// Keeps owner of this collect, if other's is different
+    pub fn add(self, other: CollectResource) -> Self {
+        CollectResource {
+            owner: self.owner,
+            resource: add_resources(self.resource, other.resource),
+        }
+    }
+    // pub fn add(self, other: HashMap<FarmResource, u32>) -> Self {
+    //     CollectResource {
+    //         owner: self.owner,
+    //         resource: add_resources(self.resource, other),
+    //     }
+    // }
 }

@@ -1,6 +1,5 @@
 use crate::actions::Actions;
 use crate::core_components::*;
-use crate::loading::TextureAssets;
 use crate::voxel_painting::get_surface_air_voxel;
 use crate::GameState;
 use bevy::prelude::*;
@@ -24,15 +23,16 @@ impl Plugin for PlayerPlugin {
 
 fn spawn_player(
     mut commands: Commands,
-    textures: Res<TextureAssets>,
     mut cam_transform: Query<&mut Transform, (With<VoxelWorldCamera>, Without<Player>)>,
 ) {
     commands
-        .spawn(SpriteBundle {
-            texture: textures.bevy.clone(),
-            transform: Transform::from_translation(Vec3::new(0., 200., 1.)),
-            ..Default::default()
-        })
+        .spawn((
+            SpriteBundle {
+                transform: Transform::from_translation(Vec3::new(0., 200., 1.)),
+                ..Default::default()
+            },
+            PlayerInventory::new(),
+        ))
         .insert(Player);
 
     cam_transform.single_mut().translation = Vec3::new(0., 200., 1.);

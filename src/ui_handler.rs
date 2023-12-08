@@ -1,8 +1,8 @@
 use bevy::ecs::entity::Entities;
 use bevy::prelude::*;
 
-use crate::{loading::TextureAssets, GameState};
-
+use crate::player::Player;
+use crate::{core_components::PlayerInventory, loading::TextureAssets, GameState};
 pub struct UiHandlerPlugin;
 
 /// This plugin handles the ui related stuff like the displaying of entitys and the crosshair
@@ -18,19 +18,22 @@ impl Plugin for UiHandlerPlugin {
 struct HudData {
     time_since_update: f32,
     entities: u32,
+    resource_count: u32,
 }
 
 #[derive(Component)]
 struct Hud {}
 
+#[allow(clippy::too_many_arguments)]
 fn render_ui(
     mut commands: Commands,
+    entities: &Entities,
     textures: Res<TextureAssets>,
     time: Res<Time>,
     mut hud_data: ResMut<HudData>,
     windows: Query<&Window>,
     hud_query: Query<Entity, With<Hud>>,
-    entities: &Entities,
+    inventory_query: Query<&PlayerInventory, With<Player>>,
 ) {
     let window: &Window = windows.single();
 
@@ -38,6 +41,10 @@ fn render_ui(
     if hud_data.time_since_update > 1.0 {
         hud_data.time_since_update = 0.0;
         hud_data.entities = entities.len();
+        hud_data.resource_count = inventory_query
+            .iter()
+            .map(|inv| inv.resources.values().sum::<u32>())
+            .sum();
     }
     hud_query.for_each(|hud| commands.entity(hud).despawn_recursive());
     // render the score, resources and the entities
@@ -66,7 +73,7 @@ fn render_ui(
                 },
             ));
             children.spawn(TextBundle::from_section(
-                "Resources: 100",
+                format!("Resources: {}", hud_data.resource_count),
                 TextStyle {
                     font_size: 20.0,
                     color: Color::rgb(0.9, 0.9, 0.9),
