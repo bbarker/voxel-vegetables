@@ -20,21 +20,30 @@ pub fn ray_cast_to_voxel(
         .find(|&(_, voxel)| matches!(voxel, WorldVoxel::Solid(_)))
 }
 
+pub fn get_growth_voxel(
+    voxel_world: &VoxelWorld,
+    voxel: WorldVoxel,
+    vox_pos: IVec3,
+) -> Option<IVec3> {
+    let above_pos = vox_pos + IVec3::Y;
+    let above_vox = voxel_world.get_voxel(above_pos);
+    let vox_pair = (voxel, above_vox);
+    // TODO: in the future we should allow multiple types of surface voxes to grow plants
+    if vox_pair == (WorldVoxel::Solid(BlockType::Dirt.index()), WorldVoxel::Air) {
+        Some(above_pos)
+    } else {
+        None
+    }
+}
+
 pub fn get_surface_air_voxel(
-    voxel_world: &mut VoxelWorld,
+    voxel_world: &VoxelWorld,
     player_position: Vec3,
     look_direction: Vec3,
 ) -> Option<IVec3> {
     if let Some((vox_pos, voxel)) = ray_cast_to_voxel(voxel_world, player_position, look_direction)
     {
-        let above_pos = vox_pos + IVec3::Y;
-        let above_vox = voxel_world.get_voxel(above_pos);
-        let vox_pair = (voxel, above_vox);
-        if vox_pair == (WorldVoxel::Solid(BlockType::Dirt.index()), WorldVoxel::Air) {
-            Some(above_pos)
-        } else {
-            None
-        }
+        get_growth_voxel(voxel_world, voxel, vox_pos)
     } else {
         None
     }

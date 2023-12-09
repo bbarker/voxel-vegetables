@@ -1,10 +1,13 @@
 use crate::core_components::*;
-use crate::voxel_painting::paint_voxel_unchecked;
+use crate::spawner::spawn_organism;
+use crate::voxel_painting::{get_growth_voxel, paint_voxel_unchecked};
 use crate::GameState;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bevy_voxel_world::prelude::*;
+use itertools::Itertools;
 use std::collections::HashSet;
+use std::iter;
 
 pub fn seed_to_germinate_system(
     time: Res<Time>,
@@ -231,7 +234,7 @@ pub fn lifecycle_system(
     query.for_each_mut(
         |(entity, HasPosition { pos }, species, life_phase, generations, owned_by)| {
             if *life_phase == LifePhase::Fruiting {
-                if let Some(OwnedBy { owner }) = owned_by {
+                let owner_opt = if let Some(OwnedBy { owner }) = owned_by {
                     let collect_resource = CollectResource {
                         owner: *owner,
                         resource: vec![
@@ -248,7 +251,32 @@ pub fn lifecycle_system(
                         .collect(),
                     };
                     commands.spawn(collect_resource);
+                    Some(owner)
+                } else {
+                    None
+                };
+                let new_plants = species.spread_per_fruiting();
+                if new_plants > 0 {
+                    let surface_blocks = get_random_surface_voxels(
+                        &voxel_world,
+                        *pos,
+                        species.spread_distance(),
+                        new_plants,
+                    );
+                    surface_blocks
+                        .into_iter()
+                        .filter_map(|(pos, voxel)| get_growth_voxel(&voxel_world, voxel, pos))
+                        .for_each(|growth_pos| {
+                            spawn_organism(
+                                &mut commands,
+                                species.clone(),
+                                crate::core_components::LifePhase::Seed,
+                                growth_pos,
+                                owner_opt.cloned(),
+                            );
+                        })
                 }
+
                 // TODO: for now, we just use the avg generations - introduce randomness
                 let generation_lifetime = species
                     .min_generations()
@@ -381,32 +409,21 @@ impl Plugin for LifeCyclesPlugin {
     }
 }
 
-/*
-// TODO: get random voxels in each chunk
-
-use bevy::math::UVec3;
-use rand::Rng;
-use std::collections::HashSet;
-use std::iter;
-
-fn get_random_voxels(chunk: &Chunk, num_voxels: usize) -> Vec<WorldVoxel> {
-    let chunk_volume = CHUNK_SIZE_U * CHUNK_SIZE_U * CHUNK_SIZE_U;
-    assert!(num_voxels < chunk_volume as usize, "numVoxels must be less than the chunk volume");
-
-    let mut rng = rand::thread_rng();
-    let mut selected_positions = HashSet::new();
-
-    iter::repeat_with(|| {
-        UVec3::new(
-            rng.gen_range(0..CHUNK_SIZE_U) as u32,
-            rng.gen_range(0..CHUNK_SIZE_U) as u32,
-            rng.gen_range(0..CHUNK_SIZE_U) as u32,
-        )
-    })
-    .filter(|pos| selected_positions.insert(*pos))
-    .take(num_voxels)
-    .map(|position| chunk.chunk_data.get_voxel(position))
-    .collect()
+pub fn get_random_surface_voxels(
+    voxel_world: &VoxelWorld,
+    position: IVec3,
+    radius: u8,
+    n: u8,
+) -> HashSet<(IVec3, WorldVoxel)> {
+    iter::repeat_with(|| voxel_world.get_random_surface_voxel(position, radius.into()))
+        .flatten()
+        .fold_while(HashSet::new(), |mut voxels, voxel| {
+            voxels.insert(voxel);
+            if voxels.len() < n as usize {
+                itertools::FoldWhile::Continue(voxels)
+            } else {
+                itertools::FoldWhile::Done(voxels)
+            }
+        })
+        .into_inner()
 }
-
-*/

@@ -111,6 +111,22 @@ impl Species {
             Species::Wheat => 10000, // 30412800 - actual estimate per chunk if we had real wheat
         }
     }
+
+    /// should be roughly proportional to seeds_per_generation
+    pub fn spread_per_fruiting(&self) -> u8 {
+        match self {
+            Species::Apple => 2,
+            Species::Wheat => 10,
+        }
+    }
+
+    pub fn spread_distance(&self) -> u8 {
+        match self {
+            Species::Apple => 10,
+            Species::Wheat => 50,
+        }
+    }
+
     pub fn food_value(&self) -> u32 {
         match self {
             Species::Apple => 10,
