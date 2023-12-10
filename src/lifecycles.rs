@@ -9,6 +9,8 @@ use itertools::Itertools;
 use std::collections::HashSet;
 use std::iter;
 
+const SYSTEM_PROCESSING_CAP: usize = 1024;
+
 pub fn seed_to_germinate_system(
     time: Res<Time>,
     mut commands: Commands,
@@ -23,9 +25,12 @@ pub fn seed_to_germinate_system(
         &Soil,
     )>,
 ) {
-    query.for_each_mut(
-        |(entity, HasPosition { pos }, species, life_phase, mut timer, water, soil)| {
-            if *life_phase == LifePhase::Seed {
+    query
+        .iter_mut()
+        .filter(|(_, _, _, life_phase, _, _, _)| **life_phase == LifePhase::Seed)
+        .take(SYSTEM_PROCESSING_CAP)
+        .for_each(
+            |(entity, HasPosition { pos }, species, _life_phase, mut timer, water, soil)| {
                 let needs = species.germination_needs();
 
                 timer.0 -= time.delta_seconds();
@@ -45,9 +50,8 @@ pub fn seed_to_germinate_system(
                         species.block_type(&LifePhase::Germinated),
                     );
                 }
-            }
-        },
-    )
+            },
+        )
 }
 
 /// We just add a time delay to go from Germinated to Growing
@@ -63,9 +67,12 @@ pub fn growth_system(
         &mut GerminationTimer,
     )>,
 ) {
-    query.for_each_mut(
-        |(entity, HasPosition { pos }, species, life_phase, mut timer)| {
-            if *life_phase == LifePhase::Germinated {
+    query
+        .iter_mut()
+        .filter(|(_, _, _, life_phase, _)| **life_phase == LifePhase::Germinated)
+        .take(SYSTEM_PROCESSING_CAP)
+        .for_each(
+            |(entity, HasPosition { pos }, species, _life_phase, mut timer)| {
                 timer.0 -= time.delta_seconds();
 
                 if timer.0 <= 0.0 {
@@ -75,9 +82,8 @@ pub fn growth_system(
                     paint_voxel_unchecked(&mut voxel_world, *pos, species.block_type(&phase));
                     commands.entity(entity).remove::<LifePhase>().insert(phase);
                 }
-            }
-        },
-    )
+            },
+        )
 }
 
 pub fn maturation_system(
@@ -94,42 +100,51 @@ pub fn maturation_system(
     )>,
 ) {
     let light = 1.0; // TODO: adjust based on weather
-    query.for_each_mut(
-        |(entity, HasPosition { pos }, species, mut life_phase, water, soil)| {
-            if let LifePhase::Growing { mut needs } = life_phase.clone() {
-                // Check there are some non-zero conditions for growth
-                if needs.time <= 0.0 && needs.light <= 0.0 && *needs.water == 0 && *needs.soil == 0
-                {
-                    paint_voxel_unchecked(
-                        &mut voxel_world,
-                        *pos,
-                        species.block_type(&LifePhase::Mature),
-                    );
-                    commands
-                        .entity(entity)
-                        .remove::<LifePhase>()
-                        .insert(LifePhase::Mature)
-                        .insert(MatureAgeTimer(0.));
-                } else if water.0 > 0 && soil.0 > 0 && light > 0.01 {
-                    // Get rate-limiting resource value
-                    // (for now we assume 1:1 usage between each)
-                    let growth_value = f32::min(f32::min(water.0 as f32, soil.0 as f32), light);
-                    if needs.time >= 0. {
-                        needs.time -= time.delta_seconds();
+    query
+        .iter_mut()
+        .filter(|(_, _, _, life_phase, _, _)| {
+            matches!(**life_phase, LifePhase::Growing { needs: _ })
+        })
+        .take(SYSTEM_PROCESSING_CAP)
+        .for_each(
+            |(entity, HasPosition { pos }, species, mut life_phase, water, soil)| {
+                if let LifePhase::Growing { mut needs } = life_phase.clone() {
+                    // Check there are some non-zero conditions for growth
+                    if needs.time <= 0.0
+                        && needs.light <= 0.0
+                        && *needs.water == 0
+                        && *needs.soil == 0
+                    {
+                        paint_voxel_unchecked(
+                            &mut voxel_world,
+                            *pos,
+                            species.block_type(&LifePhase::Mature),
+                        );
+                        commands
+                            .entity(entity)
+                            .remove::<LifePhase>()
+                            .insert(LifePhase::Mature)
+                            .insert(MatureAgeTimer(0.));
+                    } else if water.0 > 0 && soil.0 > 0 && light > 0.01 {
+                        // Get rate-limiting resource value
+                        // (for now we assume 1:1 usage between each)
+                        let growth_value = f32::min(f32::min(water.0 as f32, soil.0 as f32), light);
+                        if needs.time >= 0. {
+                            needs.time -= time.delta_seconds();
+                        }
+                        if needs.light >= 0. {
+                            needs.light -= light;
+                        }
+                        needs.water = Water(needs.water.saturating_sub(growth_value as u32));
+                        needs.soil = Soil(needs.soil.saturating_sub(growth_value as u32));
+                        *life_phase = LifePhase::Growing { needs };
+                    } else {
+                        // TODO: maybe add some health logic later where entities could lose health
+                        //     : if resources are not enough to maintain life
                     }
-                    if needs.light >= 0. {
-                        needs.light -= light;
-                    }
-                    needs.water = Water(needs.water.saturating_sub(growth_value as u32));
-                    needs.soil = Soil(needs.soil.saturating_sub(growth_value as u32));
-                    *life_phase = LifePhase::Growing { needs };
-                } else {
-                    // TODO: maybe add some health logic later where entities could lose health
-                    //     : if resources are not enough to maintain life
                 }
-            }
-        },
-    )
+            },
+        )
 }
 
 // TODO: check for polination requirements by searching for all nearby
@@ -148,9 +163,12 @@ pub fn pollination_system(
         &mut MatureAgeTimer,
     )>,
 ) {
-    query.for_each_mut(
-        |(entity, HasPosition { pos }, species, life_phase, mut timer)| {
-            if *life_phase == LifePhase::Mature {
+    query
+        .iter_mut()
+        .filter(|(_, _, _, life_phase, _)| **life_phase == LifePhase::Mature)
+        .take(SYSTEM_PROCESSING_CAP)
+        .for_each(
+            |(entity, HasPosition { pos }, species, _life_phase, mut timer)| {
                 timer.0 -= time.delta_seconds();
                 if timer.0 <= 0.0 {
                     let phase = LifePhase::Pollinated {
@@ -159,9 +177,8 @@ pub fn pollination_system(
                     paint_voxel_unchecked(&mut voxel_world, *pos, species.block_type(&phase));
                     commands.entity(entity).remove::<LifePhase>().insert(phase);
                 }
-            }
-        },
-    )
+            },
+        )
 }
 
 // Similar to the maturation_system
@@ -180,42 +197,59 @@ pub fn fruiting_system(
     )>,
 ) {
     let light = 1.0; // TODO: adjust based on weather
-    query.for_each_mut(
-        |(entity, HasPosition { pos }, species, mut life_phase, water, soil, mut generations)| {
-            if let LifePhase::Pollinated { mut needs } = life_phase.clone() {
-                // Check there are some non-zero conditions for growth
-                if needs.time <= 0.0 && needs.light <= 0.0 && *needs.water == 0 && *needs.soil == 0
-                {
-                    paint_voxel_unchecked(
-                        &mut voxel_world,
-                        *pos,
-                        species.block_type(&LifePhase::Mature),
-                    );
-                    generations.0 = generations.0.saturating_add(1);
-                    commands
-                        .entity(entity)
-                        .remove::<LifePhase>()
-                        .insert(LifePhase::Fruiting);
-                } else if water.0 > 0 && soil.0 > 0 && light > 0.01 {
-                    // Get rate-limiting resource value
-                    // (for now we assume 1:1 usage between each)
-                    let growth_value = f32::min(f32::min(water.0 as f32, soil.0 as f32), light);
-                    if needs.time >= 0. {
-                        needs.time -= time.delta_seconds();
+    query
+        .iter_mut()
+        .filter(|(_, _, _, life_phase, _, _, _)| {
+            matches!(**life_phase, LifePhase::Pollinated { needs: _ })
+        })
+        .take(SYSTEM_PROCESSING_CAP)
+        .for_each(
+            |(
+                entity,
+                HasPosition { pos },
+                species,
+                mut life_phase,
+                water,
+                soil,
+                mut generations,
+            )| {
+                if let LifePhase::Pollinated { mut needs } = life_phase.clone() {
+                    // Check there are some non-zero conditions for growth
+                    if needs.time <= 0.0
+                        && needs.light <= 0.0
+                        && *needs.water == 0
+                        && *needs.soil == 0
+                    {
+                        paint_voxel_unchecked(
+                            &mut voxel_world,
+                            *pos,
+                            species.block_type(&LifePhase::Mature),
+                        );
+                        generations.0 = generations.0.saturating_add(1);
+                        commands
+                            .entity(entity)
+                            .remove::<LifePhase>()
+                            .insert(LifePhase::Fruiting);
+                    } else if water.0 > 0 && soil.0 > 0 && light > 0.01 {
+                        // Get rate-limiting resource value
+                        // (for now we assume 1:1 usage between each)
+                        let growth_value = f32::min(f32::min(water.0 as f32, soil.0 as f32), light);
+                        if needs.time >= 0. {
+                            needs.time -= time.delta_seconds();
+                        }
+                        if needs.light >= 0. {
+                            needs.light -= light;
+                        }
+                        needs.water = Water(needs.water.saturating_sub(growth_value as u32));
+                        needs.soil = Soil(needs.soil.saturating_sub(growth_value as u32));
+                        *life_phase = LifePhase::Pollinated { needs };
+                    } else {
+                        // TODO: maybe add some health logic later where entities could lose health
+                        //     : if resources are not enough to maintain life
                     }
-                    if needs.light >= 0. {
-                        needs.light -= light;
-                    }
-                    needs.water = Water(needs.water.saturating_sub(growth_value as u32));
-                    needs.soil = Soil(needs.soil.saturating_sub(growth_value as u32));
-                    *life_phase = LifePhase::Pollinated { needs };
-                } else {
-                    // TODO: maybe add some health logic later where entities could lose health
-                    //     : if resources are not enough to maintain life
                 }
-            }
-        },
-    )
+            },
+        )
 }
 
 /// Either sends the plant to death or back to mature. The player may gain resources
@@ -231,9 +265,12 @@ pub fn lifecycle_system(
         Option<&OwnedBy>,
     )>,
 ) {
-    query.for_each_mut(
-        |(entity, HasPosition { pos }, species, life_phase, generations, owned_by)| {
-            if *life_phase == LifePhase::Fruiting {
+    query
+        .iter_mut()
+        .filter(|(_, _, _, life_phase, _, _)| **life_phase == LifePhase::Fruiting)
+        .take(SYSTEM_PROCESSING_CAP)
+        .for_each(
+            |(entity, HasPosition { pos }, species, _life_phase, generations, owned_by)| {
                 let owner_opt = if let Some(OwnedBy { owner }) = owned_by {
                     let collect_resource = CollectResource {
                         owner: *owner,
@@ -304,9 +341,8 @@ pub fn lifecycle_system(
                         .remove::<LifePhase>()
                         .insert(LifePhase::Mature);
                 }
-            }
-        },
-    )
+            },
+        )
 }
 
 pub fn decay_system(
@@ -315,15 +351,17 @@ pub fn decay_system(
     mut commands: Commands,
     mut query: Query<(Entity, &HasPosition, &mut DecayTimer)>,
 ) {
-    query.for_each_mut(|(entity, HasPosition { pos }, mut timer)| {
-        timer.0 -= time.delta_seconds();
-        if timer.0 <= 0. {
-            // TODO: look into Unset vs Air; we depend on Air but does
-            //     : Unset just change back to the original block type?
-            voxel_world.set_voxel(*pos, WorldVoxel::Air);
-            commands.entity(entity).despawn();
-        }
-    })
+    query.iter_mut().take(SYSTEM_PROCESSING_CAP).for_each(
+        |(entity, HasPosition { pos }, mut timer)| {
+            timer.0 -= time.delta_seconds();
+            if timer.0 <= 0. {
+                // TODO: look into Unset vs Air; we depend on Air but does
+                //     : Unset just change back to the original block type?
+                voxel_world.set_voxel(*pos, WorldVoxel::Air);
+                commands.entity(entity).despawn();
+            }
+        },
+    )
 }
 
 pub fn resource_collection_system(
@@ -334,6 +372,7 @@ pub fn resource_collection_system(
     if !resource_query.is_empty() {
         let mut player_new_resources: HashMap<Entity, CollectResource> = resource_query
             .into_iter()
+            .take(SYSTEM_PROCESSING_CAP)
             .fold(HashMap::new(), |mut acc_map, (_, collect)| {
                 let new_collect = acc_map
                     .remove(&collect.owner)
