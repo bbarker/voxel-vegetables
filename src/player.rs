@@ -3,6 +3,7 @@ use crate::core_components::*;
 use crate::voxel_painting::get_surface_air_voxel;
 use crate::GameState;
 use bevy::prelude::*;
+use bevy::window::CursorGrabMode;
 use bevy_voxel_world::prelude::*;
 
 pub struct PlayerPlugin;
@@ -17,14 +18,19 @@ impl Plugin for PlayerPlugin {
         app.add_systems(OnEnter(GameState::Playing), spawn_player)
             .add_systems(Update, move_player.run_if(in_state(GameState::Playing)))
             .add_systems(Update, player_click.run_if(in_state(GameState::Playing)))
-            .add_systems(Update, open_menu);
+            .add_systems(Update, open_menu)
+            .add_systems(OnExit(GameState::Playing), cleanup);
     }
 }
 
 fn spawn_player(
     mut commands: Commands,
     mut cam_transform: Query<&mut Transform, (With<VoxelWorldCamera>, Without<Player>)>,
+    query: Query<&Player>
 ) {
+    for _ in query.iter(){
+        return;
+    }
     commands
         .spawn((
             SpriteBundle {
@@ -95,9 +101,37 @@ fn player_click(
     }
 }
 
+#[derive(Component)]
+struct OpenLink(&'static str);
+
 // FIXME: doesn't seem to do anything
-fn open_menu(mut commands: Commands, actions: Res<Actions>) {
+fn open_menu(
+    mut commands: Commands,
+    actions: Res<Actions>,
+    querry: Query<(Option<&ChangeState>, Option<&OpenLink>)>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    for (change_state, open_link) in &querry {
+        if actions.open_menu {
+            if let Some(state) = change_state {
+                next_state.set(state.0.clone());
+            } else if let Some(link) = open_link {
+                if let Err(error) = webbrowser::open(link.0) {
+                    warn!("Failed to open link {error:?}");
+                }
+            }
+        }
+    }
     if actions.open_menu {
         commands.spawn(ChangeState(GameState::Menu));
     }
+}
+
+fn cleanup(
+    mut windows: Query<&mut Window>
+) {
+    let mut window = windows.single_mut();
+
+    window.cursor.visible = true;
+    window.cursor.grab_mode = CursorGrabMode::None;
 }
