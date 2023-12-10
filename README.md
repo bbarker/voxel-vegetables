@@ -1,4 +1,4 @@
-# ToDo
+# Voxel Vegetables
 
 ## Building and Running
 
@@ -6,7 +6,7 @@
 
 Install cargo, then `cargo run`
 
-Note that WASM (web) is currently [not supported](https://github.com/bbarker/speed-farmer/issues/19)
+Note that WASM (web) is currently [not supported](https://github.com/bbarker/voxel-vegetables/issues/19)
 
 ## Development
 
@@ -30,6 +30,8 @@ cargo run --features debug-inspector
 
 ## [Credits](./credits/CREDITS.md)
 
+
+# Note: this game is unrelated to the [Voxel Vegetables](https://vox-fox.itch.io/voxel-vegetables) asset pack.
 
 # License
 

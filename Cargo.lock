@@ -2760,7 +2760,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "cpal",
- "speed_farmer",
+ "voxel_vegetables",
 ]
 
 [[package]]
@@ -3702,27 +3702,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "speed_farmer"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_asset_loader",
- "bevy_kira_audio",
- "bevy_voxel_world",
- "embed-resource",
- "image",
- "itertools",
- "lazy_static",
- "noise",
- "rand 0.8.5",
- "strum",
- "strum_macros",
- "webbrowser",
- "winit",
-]
-
-[[package]]
 name = "spin"
 version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4190,6 +4169,27 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
+
+[[package]]
+name = "voxel_vegetables"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_asset_loader",
+ "bevy_kira_audio",
+ "bevy_voxel_world",
+ "embed-resource",
+ "image",
+ "itertools",
+ "lazy_static",
+ "noise",
+ "rand 0.8.5",
+ "strum",
+ "strum_macros",
+ "webbrowser",
+ "winit",
+]
 
 [[package]]
 name = "vswhom"

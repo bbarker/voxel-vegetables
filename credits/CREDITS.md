@@ -2,8 +2,8 @@
 
 ## Programming
 
-* Brandon Barker `<brandon.barker@gmail.com>` - lead on gameplay, game systems, and packaging.
-* Space Nerd `<spacenerddev@gmail.com>` - lead UI/menus and camera.
+* Brandon Barker `<brandon.barker@gmail.com>` - lead on gameplay, game systems, voxels, and packaging.
+* Space Nerd `<spacenerddev@gmail.com>` - lead UI/menus and cameras.
 * Martin Lessmeister - Fix of build on macOS.
 
 

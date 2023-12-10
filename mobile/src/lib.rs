@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::window::WindowMode;
-use speed_farmer::GamePlugin; // ToDo: Replace bevy_game with your new crate name.
+use voxel_vegetables::GamePlugin;
 
 #[bevy_main]
 fn main() {

@@ -11,9 +11,9 @@ use bevy::winit::WinitWindows;
 use bevy::DefaultPlugins;
 use bevy_voxel_world::prelude::*;
 use build_common::*;
-use speed_farmer::GamePlugin;
 use std::io::Cursor;
 use strum::EnumCount; // ToDo: Replace bevy_game with your new crate name.
+use voxel_vegetables::GamePlugin;
 use winit::window::Icon;
 
 fn main() {
