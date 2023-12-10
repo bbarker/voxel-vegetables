@@ -26,7 +26,11 @@ impl Plugin for PlayerPlugin {
 fn spawn_player(
     mut commands: Commands,
     mut cam_transform: Query<&mut Transform, (With<VoxelWorldCamera>, Without<Player>)>,
+    query: Query<&Player>
 ) {
+    for _ in query.iter(){
+        return;
+    }
     commands
         .spawn((
             SpriteBundle {
@@ -123,10 +127,9 @@ fn open_menu(
     }
 }
 
-fn cleanup(mut game_camera_query: Query<&mut Camera, With<VoxelWorldCamera>>, mut windows: Query<&mut Window>) {
-    let mut camera = game_camera_query.single_mut();
-    camera.is_active = false;
-
+fn cleanup(
+    mut windows: Query<&mut Window>
+) {
     let mut window = windows.single_mut();
 
     window.cursor.visible = true;

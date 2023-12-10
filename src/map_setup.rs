@@ -69,16 +69,6 @@ pub fn map_setup(mut commands: Commands) {
 
     // --- Just scene setup below ---
 
-    // camera
-    commands.spawn((
-        Camera3dBundle {
-            transform: Transform::from_xyz(-200.0, 180.0, -200.0),
-            ..default()
-        },
-        // This tells bevy_voxel_world tos use this cameras transform to calculate spawning area
-        VoxelWorldCamera,
-    ));
-
     // Sun
     let cascade_shadow_config = CascadeShadowConfigBuilder { ..default() }.build();
     commands.spawn(DirectionalLightBundle {
