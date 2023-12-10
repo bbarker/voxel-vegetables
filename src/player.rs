@@ -26,7 +26,11 @@ impl Plugin for PlayerPlugin {
 fn spawn_player(
     mut commands: Commands,
     mut cam_transform: Query<&mut Transform, (With<VoxelWorldCamera>, Without<Player>)>,
+    query: Query<&Player>
 ) {
+    for _ in query.iter(){
+        return;
+    }
     commands
         .spawn((
             SpriteBundle {
