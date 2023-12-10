@@ -11,12 +11,11 @@ on:
         required: true
         type: string
 
-# ToDo: adapt names
 env:
   # heads-up: this value is used as a pattern in an sed command as a workaround for a trunk issue
   #   if you use special characters, take a look at the 'Make paths relative' step in the 'build-web' job
-  GAME_EXECUTABLE_NAME: bevy_game
-  GAME_OSX_APP_NAME: BevyGame
+  GAME_EXECUTABLE_NAME: voxel_vegetables
+  GAME_OSX_APP_NAME: VoxelVegetables
 
 permissions:
   contents: write
@@ -170,109 +169,109 @@ jobs:
           tag: ${{ env.VERSION }}
           overwrite: true
 
-  build-web:
-    runs-on: ubuntu-latest
-    needs: get-version
-    env:
-      VERSION: ${{needs.get-version.outputs.version}}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Install rust toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
-      - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev
-      - name: Install trunk
-        uses: jetli/trunk-action@v0.1.0
-        with:
-          version: latest
-      - name: Add wasm target
-        run: |
-          rustup target add wasm32-unknown-unknown
-      - name: Build Release
-        run: |
-          trunk build --release
-      - name: Optimize Wasm
-        uses: NiklasEi/wasm-opt-action@v2
-        with:
-          file: dist/*.wasm
-        # Trunk cannot import assets from relative paths (see e.g. https://github.com/thedodd/trunk/issues/395)
-        # On sites like itch.io, we don't know on which base path the game gets served, so we need to rewrite all links to be relative
-      - name: Make paths relative
-        run: |
-          sed -i 's/\/index/.\/index/g' dist/index.html
-          sed -i 's/\/${{ env.GAME_EXECUTABLE_NAME }}/.\/${{ env.GAME_EXECUTABLE_NAME }}/g' dist/index.html
-      - name: Zip release
-        uses: vimtor/action-zip@v1
-        with:
-          files: dist/
-          dest: ${{ env.GAME_EXECUTABLE_NAME }}_web.zip
-      - name: Upload release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.GAME_EXECUTABLE_NAME }}_web.zip
-          asset_name: ${{ env.GAME_EXECUTABLE_NAME }}_${{ env.VERSION }}_web.zip
-          release_name: ${{ env.VERSION }}
-          tag: ${{ env.VERSION }}
-          overwrite: true
+  # build-web:
+  #   runs-on: ubuntu-latest
+  #   needs: get-version
+  #   env:
+  #     VERSION: ${{needs.get-version.outputs.version}}
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+  #     - name: Install rust toolchain
+  #       uses: dtolnay/rust-toolchain@master
+  #       with:
+  #         toolchain: stable
+  #     - name: Install Dependencies
+  #       run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev
+  #     - name: Install trunk
+  #       uses: jetli/trunk-action@v0.1.0
+  #       with:
+  #         version: latest
+  #     - name: Add wasm target
+  #       run: |
+  #         rustup target add wasm32-unknown-unknown
+  #     - name: Build Release
+  #       run: |
+  #         trunk build --release
+  #     - name: Optimize Wasm
+  #       uses: NiklasEi/wasm-opt-action@v2
+  #       with:
+  #         file: dist/*.wasm
+  #       # Trunk cannot import assets from relative paths (see e.g. https://github.com/thedodd/trunk/issues/395)
+  #       # On sites like itch.io, we don't know on which base path the game gets served, so we need to rewrite all links to be relative
+  #     - name: Make paths relative
+  #       run: |
+  #         sed -i 's/\/index/.\/index/g' dist/index.html
+  #         sed -i 's/\/${{ env.GAME_EXECUTABLE_NAME }}/.\/${{ env.GAME_EXECUTABLE_NAME }}/g' dist/index.html
+  #     - name: Zip release
+  #       uses: vimtor/action-zip@v1
+  #       with:
+  #         files: dist/
+  #         dest: ${{ env.GAME_EXECUTABLE_NAME }}_web.zip
+  #     - name: Upload release
+  #       uses: svenstaro/upload-release-action@v2
+  #       with:
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         file: ${{ env.GAME_EXECUTABLE_NAME }}_web.zip
+  #         asset_name: ${{ env.GAME_EXECUTABLE_NAME }}_${{ env.VERSION }}_web.zip
+  #         release_name: ${{ env.VERSION }}
+  #         tag: ${{ env.VERSION }}
+  #         overwrite: true
 
-  build-for-iOS:
-    runs-on: macos-latest
-    timeout-minutes: 30
-    needs: get-version
-    env:
-      VERSION: ${{needs.get-version.outputs.version}}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Add iOS targets
-        run: rustup target add aarch64-apple-ios x86_64-apple-ios
-      - name: Build app for iOS
-        run: |
-          cd mobile
-          make xcodebuild-iphone-release
-          mkdir Payload
-          mv build/Build/Products/Release-iphoneos/*.app Payload
-          zip -r ${{ env.GAME_EXECUTABLE_NAME }}.zip Payload
-          mv ${{ env.GAME_EXECUTABLE_NAME }}.zip ${{ env.GAME_EXECUTABLE_NAME }}.ipa
-      - name: Upload release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: mobile/${{ env.GAME_EXECUTABLE_NAME }}.ipa
-          asset_name: ${{ env.GAME_EXECUTABLE_NAME }}_${{ env.VERSION }}_unsigned_ios.ipa
-          release_name: ${{ env.VERSION }}
-          tag: ${{ env.VERSION }}
-          overwrite: true
+  # build-for-iOS:
+  #   runs-on: macos-latest
+  #   timeout-minutes: 30
+  #   needs: get-version
+  #   env:
+  #     VERSION: ${{needs.get-version.outputs.version}}
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: dtolnay/rust-toolchain@stable
+  #     - name: Add iOS targets
+  #       run: rustup target add aarch64-apple-ios x86_64-apple-ios
+  #     - name: Build app for iOS
+  #       run: |
+  #         cd mobile
+  #         make xcodebuild-iphone-release
+  #         mkdir Payload
+  #         mv build/Build/Products/Release-iphoneos/*.app Payload
+  #         zip -r ${{ env.GAME_EXECUTABLE_NAME }}.zip Payload
+  #         mv ${{ env.GAME_EXECUTABLE_NAME }}.zip ${{ env.GAME_EXECUTABLE_NAME }}.ipa
+  #     - name: Upload release
+  #       uses: svenstaro/upload-release-action@v2
+  #       with:
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         file: mobile/${{ env.GAME_EXECUTABLE_NAME }}.ipa
+  #         asset_name: ${{ env.GAME_EXECUTABLE_NAME }}_${{ env.VERSION }}_unsigned_ios.ipa
+  #         release_name: ${{ env.VERSION }}
+  #         tag: ${{ env.VERSION }}
+  #         overwrite: true
 
-  build-for-Android:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: get-version
-    env:
-      VERSION: ${{needs.get-version.outputs.version}}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Add Android targets
-        # could add more targets like armv7-linux-androideabi here (then also add to cargo-apk config)
-        run: rustup target add aarch64-linux-android
-      - name: Install Cargo APK
-        run: cargo install --force cargo-apk
-      - name: Build app for Android
-        run: ANDROID_NDK_ROOT=$ANDROID_NDK_LATEST_HOME cargo apk build --package mobile
-        env:
-          # This will reduce the APK size from 1GB to ~200MB
-          CARGO_PROFILE_DEV_DEBUG: false
-      - name: Upload release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/debug/apk/${{ env.GAME_OSX_APP_NAME }}.apk
-          asset_name: ${{ env.GAME_EXECUTABLE_NAME }}_${{ env.VERSION }}_android.apk
-          release_name: ${{ env.VERSION }}
-          tag: ${{ env.VERSION }}
-          overwrite: true
+  # build-for-Android:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 30
+  #   needs: get-version
+  #   env:
+  #     VERSION: ${{needs.get-version.outputs.version}}
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: dtolnay/rust-toolchain@stable
+  #     - name: Add Android targets
+  #       # could add more targets like armv7-linux-androideabi here (then also add to cargo-apk config)
+  #       run: rustup target add aarch64-linux-android
+  #     - name: Install Cargo APK
+  #       run: cargo install --force cargo-apk
+  #     - name: Build app for Android
+  #       run: ANDROID_NDK_ROOT=$ANDROID_NDK_LATEST_HOME cargo apk build --package mobile
+  #       env:
+  #         # This will reduce the APK size from 1GB to ~200MB
+  #         CARGO_PROFILE_DEV_DEBUG: false
+  #     - name: Upload release
+  #       uses: svenstaro/upload-release-action@v2
+  #       with:
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         file: target/debug/apk/${{ env.GAME_OSX_APP_NAME }}.apk
+  #         asset_name: ${{ env.GAME_EXECUTABLE_NAME }}_${{ env.VERSION }}_android.apk
+  #         release_name: ${{ env.VERSION }}
+  #         tag: ${{ env.VERSION }}
+  #         overwrite: true

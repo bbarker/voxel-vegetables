@@ -19,8 +19,8 @@ version = "0.15"
 features = ["oboe-shared-stdcxx"]
 
 [package.metadata.android]
-package = "me.nikl.bevygame"  # ToDo
-apk_name = "BevyGame"  # ToDo same as GAME_OSX_APP_NAME in release workflow
+package = "io.github.bbarker.voxel-vegetables"
+apk_name = "VoxelVegetables"  # Note: same as GAME_OSX_APP_NAME in release workflow
 assets = "../assets"
 strip = "strip"
 resources = "../build/android/res"
@@ -31,4 +31,4 @@ target_sdk_version = 33
 
 [package.metadata.android.application]
 icon = "@mipmap/icon"
-label = "Bevy Game" # ToDo
+label = "Voxel Vegetables"
