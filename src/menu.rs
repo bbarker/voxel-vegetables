@@ -1,8 +1,10 @@
 use crate::core_components::ChangeState;
 use crate::loading::TextureAssets;
 use crate::GameState;
+use crate::scene_handler::MenuCamera;
 use bevy::prelude::*;
 use bevy_voxel_world::prelude::*;
+
 pub struct MenuPlugin;
 
 /// This plugin is responsible for the game menu (containing only one button...)
@@ -20,9 +22,6 @@ struct ButtonColors {
     normal: Color,
     hovered: Color,
 }
-
-#[derive(Component)]
-struct MenuCamera;
 
 impl Default for ButtonColors {
     fn default() -> Self {
@@ -46,7 +45,6 @@ fn setup_menu(
     camera.is_active = false;
 
     info!("menu");
-    commands.spawn((Camera2dBundle::default(), MenuCamera));
     commands
         .spawn((
             NodeBundle {

@@ -14,6 +14,7 @@ mod player;
 mod spawner;
 mod ui_handler;
 mod voxel_painting;
+mod scene_handler;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
@@ -25,6 +26,7 @@ use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
 use crate::ui_handler::UiHandlerPlugin;
 use crate::voxel_painting::paint_voxel_system;
+use crate::scene_handler::SceneSwitchPlugin;
 use bevy::app::App;
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -58,6 +60,7 @@ impl Plugin for GamePlugin {
                 LifeCyclesPlugin,
                 CameraHandlerPlugin,
                 UiHandlerPlugin,
+                SceneSwitchPlugin,
             ))
             .add_systems(
                 Update,
