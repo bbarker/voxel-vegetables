@@ -127,10 +127,9 @@ fn open_menu(
     }
 }
 
-fn cleanup(mut game_camera_query: Query<&mut Camera, With<VoxelWorldCamera>>, mut windows: Query<&mut Window>) {
-    let mut camera = game_camera_query.single_mut();
-    camera.is_active = false;
-
+fn cleanup(
+    mut windows: Query<&mut Window>
+) {
     let mut window = windows.single_mut();
 
     window.cursor.visible = true;

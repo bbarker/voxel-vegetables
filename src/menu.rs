@@ -1,9 +1,7 @@
 use crate::core_components::ChangeState;
 use crate::loading::TextureAssets;
 use crate::GameState;
-use crate::scene_handler::MenuCamera;
 use bevy::prelude::*;
-use bevy_voxel_world::prelude::*;
 
 pub struct MenuPlugin;
 
@@ -38,7 +36,6 @@ struct Menu;
 fn setup_menu(
     mut commands: Commands,
     textures: Res<TextureAssets>,
-    mut game_camera_query: Query<&mut Camera, With<VoxelWorldCamera>>,
 ) {
     info!("menu");
     commands
@@ -196,14 +193,14 @@ fn click_play_button(
         ),
         (Changed<Interaction>, With<Button>),
     >,
-    mut menu_camera_query: Query<&mut Camera, With<MenuCamera>>,
-    mut game_camera_query: Query<&mut Camera, (With<VoxelWorldCamera>, Without<MenuCamera>)>,
+    mut commands: Commands,
 ) {
     for (interaction, mut color, button_colors, change_state, open_link) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
                 if let Some(state) = change_state {
                     next_state.set(state.0.clone());
+                    commands.spawn(ChangeState(GameState::Playing));
                 } else if let Some(link) = open_link {
                     if let Err(error) = webbrowser::open(link.0) {
                         warn!("Failed to open link {error:?}");

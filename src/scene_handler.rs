@@ -18,15 +18,11 @@ pub struct MenuCamera;
 
 fn setup_cameras(
     mut commands: Commands,
-    //mut menu_camera_query: Query<&mut Camera, With<MenuCamera>>,
-    //mut game_camera_query: Query<&mut Camera, (With<VoxelWorldCamera>, Without<MenuCamera>)>,
 ){
     // Spawn Cameras
 
     // Menu Camera
     commands.spawn((Camera2dBundle::default(), MenuCamera));
-    //let mut menu_camera = menu_camera_query.single_mut();
-    //menu_camera.is_active = false;
 
     // Game Camera
     commands.spawn((
@@ -37,8 +33,6 @@ fn setup_cameras(
         // This tells bevy_voxel_world tos use this cameras transform to calculate spawning area
         VoxelWorldCamera,
     ));
-    //let mut game_camera = game_camera_query.single_mut();
-    //game_camera.is_active = false;
 }
 
 fn enter_playing(
