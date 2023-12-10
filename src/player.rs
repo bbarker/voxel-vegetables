@@ -69,7 +69,7 @@ fn move_player(
 
 fn player_click(
     mut commands: Commands,
-    mut voxel_world: VoxelWorld,
+    voxel_world: VoxelWorld,
     actions: Res<Actions>,
     player_query: Query<(Entity, &Transform), With<Player>>,
     cam_query: Query<&Transform, (With<VoxelWorldCamera>, Without<Player>)>,
@@ -79,7 +79,7 @@ fn player_click(
             let click_direction = cam_transform.forward().normalize_or_zero();
             player_query.for_each(|(player_entity, player_transform)| {
                 if let Some(voxel_pos) = get_surface_air_voxel(
-                    &mut voxel_world,
+                    &voxel_world,
                     player_transform.translation,
                     click_direction,
                 ) {
