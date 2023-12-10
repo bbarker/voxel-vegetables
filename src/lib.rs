@@ -53,6 +53,7 @@ impl Plugin for GamePlugin {
         app.add_state::<GameState>()
             .add_plugins((
                 LoadingPlugin,
+                SceneSwitchPlugin,
                 MenuPlugin,
                 ActionsPlugin,
                 InternalAudioPlugin,
@@ -60,7 +61,6 @@ impl Plugin for GamePlugin {
                 LifeCyclesPlugin,
                 CameraHandlerPlugin,
                 UiHandlerPlugin,
-                SceneSwitchPlugin,
             ))
             .add_systems(
                 Update,
