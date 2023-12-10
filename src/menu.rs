@@ -33,10 +33,7 @@ impl Default for ButtonColors {
 #[derive(Component)]
 struct Menu;
 
-fn setup_menu(
-    mut commands: Commands,
-    textures: Res<TextureAssets>,
-) {
+fn setup_menu(mut commands: Commands, textures: Res<TextureAssets>) {
     info!("menu");
     commands
         .spawn((

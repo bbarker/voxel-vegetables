@@ -11,10 +11,10 @@ mod loading;
 mod map_setup;
 mod menu;
 mod player;
+mod scene_handler;
 mod spawner;
 mod ui_handler;
 mod voxel_painting;
-mod scene_handler;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
@@ -24,9 +24,9 @@ use crate::loading::LoadingPlugin;
 use crate::map_setup::map_setup;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
+use crate::scene_handler::SceneSwitchPlugin;
 use crate::ui_handler::UiHandlerPlugin;
 use crate::voxel_painting::paint_voxel_system;
-use crate::scene_handler::SceneSwitchPlugin;
 use bevy::app::App;
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};

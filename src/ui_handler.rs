@@ -52,7 +52,6 @@ fn render_ui(
             .sum();
     }
 
-
     hud_query.for_each(|hud| commands.entity(hud).despawn_recursive());
     // render the score, resources and the entities
     commands

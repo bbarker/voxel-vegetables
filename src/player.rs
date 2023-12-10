@@ -26,22 +26,21 @@ impl Plugin for PlayerPlugin {
 fn spawn_player(
     mut commands: Commands,
     mut cam_transform: Query<&mut Transform, (With<VoxelWorldCamera>, Without<Player>)>,
-    query: Query<&Player>
+    query: Query<&Player>,
 ) {
-    for _ in query.iter(){
-        return;
-    }
-    commands
-        .spawn((
-            SpriteBundle {
-                transform: Transform::from_translation(Vec3::new(0., 200., 1.)),
-                ..Default::default()
-            },
-            PlayerInventory::new(),
-        ))
-        .insert(Player);
+    if query.is_empty() {
+        commands
+            .spawn((
+                SpriteBundle {
+                    transform: Transform::from_translation(Vec3::new(0., 200., 1.)),
+                    ..Default::default()
+                },
+                PlayerInventory::new(),
+            ))
+            .insert(Player);
 
-    cam_transform.single_mut().translation = Vec3::new(0., 200., 1.);
+        cam_transform.single_mut().translation = Vec3::new(0., 200., 1.);
+    }
 }
 
 fn move_player(
@@ -127,9 +126,7 @@ fn open_menu(
     }
 }
 
-fn cleanup(
-    mut windows: Query<&mut Window>
-) {
+fn cleanup(mut windows: Query<&mut Window>) {
     let mut window = windows.single_mut();
 
     window.cursor.visible = true;
