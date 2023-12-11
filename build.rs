@@ -16,6 +16,9 @@ fn main() {
         "grass1.png",
         "grass_tan.png",
         "grass_brown.png",
+        "wheat_side.png",
+        "wheat_top.png",
+        "wheat_sprouts.png",
     ]; // Example filenames
 
     // Load the first image to get width and height

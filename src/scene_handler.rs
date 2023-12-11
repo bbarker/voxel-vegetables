@@ -1,4 +1,4 @@
-use crate::GameState;
+use crate::{camera_handler::FlyCamera, GameState};
 use bevy::prelude::*;
 use bevy_voxel_world::prelude::*;
 
@@ -16,9 +16,7 @@ impl Plugin for SceneSwitchPlugin {
 #[derive(Component)]
 pub struct MenuCamera;
 
-fn setup_cameras(
-    mut commands: Commands,
-){
+fn setup_cameras(mut commands: Commands) {
     // Spawn Cameras
 
     // Menu Camera
@@ -32,13 +30,19 @@ fn setup_cameras(
         },
         // This tells bevy_voxel_world tos use this cameras transform to calculate spawning area
         VoxelWorldCamera,
+        FlyCamera {
+            max_speed: 1.5,
+            pitch: 30.0,
+            yaw: 45.0,
+            ..default()
+        },
     ));
 }
 
 fn enter_playing(
     mut menu_camera_query: Query<&mut Camera, With<MenuCamera>>,
     mut game_camera_query: Query<&mut Camera, (With<VoxelWorldCamera>, Without<MenuCamera>)>,
-){
+) {
     let mut menu_camera = menu_camera_query.single_mut();
     menu_camera.is_active = false;
 
@@ -49,7 +53,7 @@ fn enter_playing(
 fn enter_menu(
     mut menu_camera_query: Query<&mut Camera, With<MenuCamera>>,
     mut game_camera_query: Query<&mut Camera, (With<VoxelWorldCamera>, Without<MenuCamera>)>,
-){
+) {
     let mut menu_camera = menu_camera_query.single_mut();
     menu_camera.is_active = true;
 
