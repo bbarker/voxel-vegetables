@@ -1,6 +1,5 @@
 use crate::GameState;
 use bevy::prelude::*;
-use crate::actions::Actions;
 use crate::core_components::*;
 
 pub struct TimerPlugin;
@@ -25,19 +24,20 @@ fn run_timer(
     mut query: Query<&mut GameTimer>,
     time: Res<Time>,
     mut commands: Commands,
-    actions: Res<Actions>,
     querry: Query<(Option<&ChangeState>, Option<&OpenLink>)>,
     mut next_state: ResMut<NextState<GameState>>,
+    entity_query: Query<Entity, With<GameTimer>>
 ){
+    let entity = entity_query.single();
+
     for mut timer in query.iter_mut(){
         if !(timer.is_active) {
             return;
         }
         if timer.time < 0. {
-            info!("working!!!!");
             for (change_state, open_link) in &querry {
-                if let Some(state) = change_state {
-                    info!("working!!!!");
+                if let Some(_state) = change_state {
+                    commands.entity(entity).despawn();
                     next_state.set(GameState::Menu);
                 } else if let Some(link) = open_link {
                     if let Err(error) = webbrowser::open(link.0) {

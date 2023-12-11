@@ -3,6 +3,8 @@ use bevy::prelude::*;
 
 use crate::player::Player;
 use crate::{core_components::PlayerInventory, loading::TextureAssets, GameState};
+use crate::timer::GameTimer;
+
 pub struct UiHandlerPlugin;
 
 /// This plugin handles the ui related stuff like the displaying of entitys and the crosshair
@@ -35,7 +37,9 @@ fn render_ui(
     windows: Query<&Window>,
     hud_query: Query<Entity, With<Hud>>,
     inventory_query: Query<&PlayerInventory, With<Player>>,
+    timer_query: Query<&GameTimer>,
 ) {
+    let timer = timer_query.single();
     let window: &Window = windows.single();
 
     hud_data.time_since_update += time.delta_seconds();
@@ -89,6 +93,14 @@ fn render_ui(
             ));
             children.spawn(TextBundle::from_section(
                 ["Entities: ".to_string(), hud_data.entities.to_string()].join(" "),
+                TextStyle {
+                    font_size: 20.0,
+                    color: Color::rgb(0.9, 0.9, 0.9),
+                    ..default()
+                },
+            ));
+            children.spawn(TextBundle::from_section(
+                ["Time: ".to_string(), (timer.time as i32).to_string()].join(" "),
                 TextStyle {
                     font_size: 20.0,
                     color: Color::rgb(0.9, 0.9, 0.9),
