@@ -12,6 +12,8 @@
 * Bevy icon: [MIT License](licenses/Bevy_MIT_License.md)
 * [Voxel pack (base)](https://www.kenney.nl/assets/voxel-pack) by Kenney Vleugels for Kenney (www.kenney.nl)
   [CC0 1.0 License](https://creativecommons.org/publicdomain/zero/1.0/)
+* Wheat sprouts - Lindon Barker
+* [Soft wind](https://freesound.org/people/florianreichelt/sounds/459977/) (audio) - Florian Reichelt (florianreichelt)
 
 ## Major dependencies
 
