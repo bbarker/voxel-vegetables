@@ -14,9 +14,9 @@ mod menu;
 mod player;
 mod scene_handler;
 mod spawner;
+mod timer;
 mod ui_handler;
 mod voxel_painting;
-mod timer;
 
 use crate::actions::ActionsPlugin;
 use crate::audio::InternalAudioPlugin;
@@ -27,9 +27,9 @@ use crate::map_setup::map_setup;
 use crate::menu::MenuPlugin;
 use crate::player::PlayerPlugin;
 use crate::scene_handler::SceneSwitchPlugin;
+use crate::timer::TimerPlugin;
 use crate::ui_handler::UiHandlerPlugin;
 use crate::voxel_painting::paint_voxel_system;
-use crate::timer::TimerPlugin;
 use bevy::app::App;
 #[cfg(debug_assertions)]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};

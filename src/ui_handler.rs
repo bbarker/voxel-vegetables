@@ -2,8 +2,8 @@ use bevy::ecs::entity::Entities;
 use bevy::prelude::*;
 
 use crate::player::Player;
-use crate::{core_components::PlayerInventory, loading::TextureAssets, GameState};
 use crate::timer::GameTimer;
+use crate::{core_components::PlayerInventory, loading::TextureAssets, GameState};
 
 pub struct UiHandlerPlugin;
 

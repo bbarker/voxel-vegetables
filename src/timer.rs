@@ -1,11 +1,11 @@
+use crate::core_components::*;
 use crate::GameState;
 use bevy::prelude::*;
-use crate::core_components::*;
 
 pub struct TimerPlugin;
 
 #[derive(Clone, Debug, Component)]
-pub struct GameTimer{
+pub struct GameTimer {
     pub time: f32,
     pub is_active: bool,
 }
@@ -26,11 +26,11 @@ fn run_timer(
     mut commands: Commands,
     querry: Query<(Option<&ChangeState>, Option<&OpenLink>)>,
     mut next_state: ResMut<NextState<GameState>>,
-    entity_query: Query<Entity, With<GameTimer>>
-){
+    entity_query: Query<Entity, With<GameTimer>>,
+) {
     let entity = entity_query.single();
 
-    for mut timer in query.iter_mut(){
+    for mut timer in query.iter_mut() {
         if !(timer.is_active) {
             return;
         }
