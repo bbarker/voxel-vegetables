@@ -6,6 +6,7 @@ mod block_types;
 mod build_common;
 mod camera_handler;
 mod core_components;
+mod game_control;
 mod lifecycles;
 mod loading;
 mod map_setup;

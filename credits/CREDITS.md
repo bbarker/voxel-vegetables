@@ -18,5 +18,6 @@
 * Game [project template](https://github.com/NiklasEi/bevy_game_template) - Nikl (`@nikl_me@mastodon.online`)
 * Voxel World Plugin ([bevy_voxel_world](https://github.com/splashdust/bevy_voxel_world)) 
   - `splashdust` (Joacim Magnusson)
+* [bevy_fly_camera](https://github.com/mcpar-land/bevy_fly_camera) - modified and used in codebase (MIT license).
 * [Bevy](https://bevyengine.org/) - The Bevy Team!
 * The Rust programming language

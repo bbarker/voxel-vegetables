@@ -1,4 +1,4 @@
-use crate::GameState;
+use crate::{camera_handler::FlyCamera, GameState};
 use bevy::prelude::*;
 use bevy_voxel_world::prelude::*;
 
@@ -30,6 +30,12 @@ fn setup_cameras(mut commands: Commands) {
         },
         // This tells bevy_voxel_world tos use this cameras transform to calculate spawning area
         VoxelWorldCamera,
+        FlyCamera {
+            max_speed: 1.5,
+            pitch: 30.0,
+            yaw: 45.0,
+            ..default()
+        },
     ));
 }
 
