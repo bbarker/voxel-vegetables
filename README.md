@@ -31,9 +31,11 @@ cargo run --features debug-inspector
 ## [Credits](./credits/CREDITS.md)
 
 
-# Note: this game is unrelated to the [Voxel Vegetables](https://vox-fox.itch.io/voxel-vegetables) asset pack.
+Note: this game is unrelated to the [Voxel Vegetables](https://vox-fox.itch.io/voxel-vegetables) asset pack.
 
 # License
+
+This project is Copyright © 2023 Brandon Elam Barker and Space Nerd.
 
 This project is licensed under the [MPL v2](LICENSE.md) except some content of `assets` and the Bevy icons 
 in the `build` directory (see [Credits](credits/CREDITS.md)). 

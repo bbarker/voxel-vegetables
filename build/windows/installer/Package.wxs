@@ -34,7 +34,8 @@
         <!-- Installs the actual files -->
         <ComponentGroup Id="MainComponent" Directory="INSTALLFOLDER">
             <Component>
-                <File Id="Executable" Source="..\..\..\target\release\voxel_vegetables.exe" Vital="true" />  <!-- Note: this should point to your executable -->
+                <!-- <File Id="Executable" Source="..\..\..\target\release\voxel_vegetables.exe" Vital="true" />  --> <!-- Note: this should point to your executable -->
+                <File Id="Executable" Source="..\..\..\target\debug\voxel_vegetables.exe" Vital="true" />  <!-- Note: this should point to your executable -->
             </Component>
         </ComponentGroup>
 
