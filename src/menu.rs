@@ -2,6 +2,7 @@ use crate::core_components::ChangeState;
 use crate::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
+use crate::timer::GameTimer;
 
 pub struct MenuPlugin;
 
@@ -196,6 +197,7 @@ fn click_play_button(
         match *interaction {
             Interaction::Pressed => {
                 if let Some(state) = change_state {
+                    commands.spawn(GameTimer { time: 600., is_active: true });
                     next_state.set(state.0.clone());
                     commands.spawn(ChangeState(GameState::Playing));
                 } else if let Some(link) = open_link {
