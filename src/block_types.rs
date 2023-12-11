@@ -1,3 +1,5 @@
+use std::u8;
+
 use bevy::utils::HashMap;
 use lazy_static::*;
 use strum_macros::*;
@@ -13,6 +15,9 @@ pub enum VoxTexture {
     GrassPlant,
     GrassTan,
     GrassBrown,
+    WheatSide,
+    WheatTop,
+    WheatSprouts,
 }
 
 impl VoxTexture {
@@ -88,11 +93,11 @@ lazy_static! {
         );
         tmap.insert(
             BlockType::WheatSprouts,
-            VoxTextureArray([VoxTexture::Nothing, VoxTexture::GrassPlant, VoxTexture::Nothing]),
+            VoxTextureArray([VoxTexture::WheatSprouts, VoxTexture::WheatSprouts, VoxTexture::Dirt]),
         );
         tmap.insert(
             BlockType::Wheat,
-            VoxTextureArray([VoxTexture::Nothing, VoxTexture::GrassTan, VoxTexture::Nothing]),
+            VoxTextureArray([VoxTexture::WheatTop, VoxTexture::WheatSide, VoxTexture::Nothing]),
         );
         tmap.insert(
             BlockType::AppleSapling,

@@ -107,8 +107,8 @@ impl Species {
 
     pub fn seeds_per_generation(&self) -> u32 {
         match self {
-            Species::Apple => 1500,
-            Species::Wheat => 10000, // 30412800 - actual estimate per chunk if we had real wheat
+            Species::Apple => 15,  // Actual per tree is about 1500
+            Species::Wheat => 100, // 30412800 - actual estimate per chunk if we had real wheat
         }
     }
 

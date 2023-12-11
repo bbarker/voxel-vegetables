@@ -67,7 +67,7 @@ webbrowser = { version = "0.8", features = ["hardened"] }
 # keep the following in sync with Bevy's dependencies
 winit = { version = "0.28.7", default-features = false }
 image = { version = "0.24", default-features = false }
-bevy_voxel_world = "0.3.3"
+bevy_voxel_world = {git = "https://github.com/splashdust/bevy_voxel_world.git", rev = "115bd34"} # "0.3.3"
 noise = "0.8.2"
 lazy_static = "1.4.0"
 strum = "0.25.0"

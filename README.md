@@ -38,3 +38,8 @@ cargo run --features debug-inspector
 This project is licensed under the [MPL v2](LICENSE.md) except some content of `assets` and the Bevy icons 
 in the `build` directory (see [Credits](credits/CREDITS.md)). 
 
+We feel that treating files as units of licensed tech (as in the MPL v2) is a little bit antiquated, and
+wish to be more liberal - if you make improvements to any code component, we would like those to be open
+source, but if you use only a part of the file, there's no need for you to open source every part of
+the file. We'll endeavor to dual-license the project under a new license along these lines at some point.
+But for now, know this is the intent.
