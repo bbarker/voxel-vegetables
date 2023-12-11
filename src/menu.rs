@@ -191,16 +191,19 @@ fn click_play_button(
         ),
         (Changed<Interaction>, With<Button>),
     >,
+    timer_query: Query<&GameTimer>,
     mut commands: Commands,
 ) {
     for (interaction, mut color, button_colors, change_state, open_link) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
                 if let Some(state) = change_state {
-                    commands.spawn(GameTimer {
-                        time: 600.,
-                        is_active: true,
-                    });
+                    if timer_query.is_empty() {
+                        commands.spawn(GameTimer {
+                            time: 600.,
+                            is_active: true,
+                        });
+                    };
                     next_state.set(state.0.clone());
                     commands.spawn(ChangeState(GameState::Playing));
                 } else if let Some(link) = open_link {

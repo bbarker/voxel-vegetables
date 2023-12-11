@@ -25,7 +25,7 @@ struct HudData {
 }
 
 #[derive(Component)]
-struct Hud {}
+pub struct Hud {}
 
 #[allow(clippy::too_many_arguments)]
 fn render_ui(
